@@ -39,5 +39,9 @@
     "guest_prompt_message": "Create an account to keep your data safe if you change phones or uninstall the app.",
     "guest_prompt_cta": "Create account",
     "guest_data_loss_warning": "Without an account, your data will be lost if you uninstall the app."
+  },
+  "onboarding": {
+    "tagline": "Fasting, explained by science.",
+    "start": "Get started"
   }
 }

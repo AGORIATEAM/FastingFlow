@@ -39,5 +39,9 @@
     "guest_prompt_message": "Crée ton compte pour ne pas perdre tes données si tu changes de téléphone ou désinstalles l'app.",
     "guest_prompt_cta": "Créer un compte",
     "guest_data_loss_warning": "Sans compte, tes données seront perdues si tu désinstalles l'app."
+  },
+  "onboarding": {
+    "tagline": "Le jeûne, expliqué par la science.",
+    "start": "Commencer"
   }
 }

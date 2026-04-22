@@ -1,0 +1,1 @@
+export { bootstrapUser } from './bootstrap';
