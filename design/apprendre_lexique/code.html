@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#4d5f80",
+                    "primary-fixed-dim": "#b4c7ed",
+                    "on-primary-container": "#7587ab",
+                    "on-secondary-container": "#002d42",
+                    "background": "#050F1D",
+                    "error-container": "#93000a",
+                    "primary-container": "#0a1f3d",
+                    "on-surface": "#e4e2e5",
+                    "on-surface-variant": "#c5c6ce",
+                    "tertiary-container": "#002517",
+                    "secondary-fixed-dim": "#84cfff",
+                    "on-primary-fixed": "#061b39",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "outline": "#8e9098",
+                    "on-secondary-fixed-variant": "#004c6c",
+                    "on-secondary": "#00344c",
+                    "secondary": "#84cfff",
+                    "surface-container-high": "#292a2c",
+                    "surface-tint": "#b4c7ed",
+                    "on-background": "#e4e2e5",
+                    "on-primary-fixed-variant": "#354767",
+                    "surface-container-lowest": "#0d0e10",
+                    "surface-container": "#1f1f22",
+                    "on-error": "#690005",
+                    "on-secondary-fixed": "#001e2e",
+                    "on-tertiary-fixed": "#002114",
+                    "secondary-container": "#009ad7",
+                    "surface-variant": "#343537",
+                    "outline-variant": "#44474e",
+                    "on-tertiary-container": "#009a6c",
+                    "primary-fixed": "#d6e3ff",
+                    "inverse-surface": "#e4e2e5",
+                    "tertiary-fixed-dim": "#45dfa4",
+                    "on-tertiary": "#003825",
+                    "surface": "#131316",
+                    "on-primary": "#1e304f",
+                    "secondary-fixed": "#c7e7ff",
+                    "tertiary-fixed": "#68fcbf",
+                    "surface-container-low": "#1b1b1e",
+                    "primary": "#b4c7ed",
+                    "surface-container-highest": "#343537",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "surface-dim": "#131316",
+                    "inverse-on-surface": "#303033",
+                    "surface-bright": "#39393c",
+                    "tertiary": "#45dfa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "margin_mobile": "20px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "xxl": "48px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "h1": ["Inter"],
+                    "display-timer": ["Space Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-timer": ["72px", {"lineHeight": "1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(13, 37, 71, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(245, 247, 250, 0.1);
+        }
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(61, 180, 242, 0.4);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-16 bg-[#0D2547]/80 backdrop-blur-2xl border-b border-white/10 shadow-lg shadow-[#3DB4F2]/5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-[#3DB4F2]">
+<img class="w-full h-full object-cover" data-alt="Close-up professional headshot of a person with friendly expression, soft studio lighting, blurred tech background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBF7Ac4iNNY3o6vp23atmgiK_hiVj5z-hofKg_Qm7Idt-JZKXlCe0tMu8vyF1Qx1VtbA1qSbG9LJnIPYuJw23QsjXgXUlCtJkpJr9QNt1cXOpbfzOyzRaNF94vUBXd2dJEqv-J0DG_0S4th5hi0JdPnG9CUs7jc7Zdd4CjYz37AOyDYh3RO9qVclgL6EXQZTxkeVwUN5IrQqCQXuCqhf1LCchQ9bhMejiSz6qNMkyyZV0hZxU04hzYUGhubH7IdSeNTesAB-zSY4c0n"/>
+</div>
+<span class="text-xl font-bold text-white font-['Inter'] tracking-tight">FastLife</span>
+</div>
+<button class="text-[#3DB4F2] hover:opacity-80 transition-opacity active:scale-95">
+<span class="material-symbols-outlined">local_fire_department</span>
+</button>
+</header>
+<main class="pt-20 px-margin_mobile space-y-xl">
+<!-- Search & Filter Section -->
+<section class="space-y-md">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-[#0D2547] border-none rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-secondary-container transition-all shadow-inner" placeholder="Rechercher un terme..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+<button class="flex-shrink-0 px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container text-label-sm">TOUT</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full glass-panel text-on-surface-variant text-label-sm border-white/5">0-12H</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full glass-panel text-on-surface-variant text-label-sm border-white/5">12-18H</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full glass-panel text-on-surface-variant text-label-sm border-white/5">18-24H</button>
+<button class="flex-shrink-0 px-4 py-2 rounded-full glass-panel text-on-surface-variant text-label-sm border-white/5">24H+</button>
+</div>
+</section>
+<!-- Alphabetical Index -->
+<section class="flex gap-4 items-center overflow-x-auto hide-scrollbar py-2 border-y border-white/5">
+<span class="text-secondary font-bold text-lg">A</span>
+<span class="text-outline font-medium text-lg opacity-40">B</span>
+<span class="text-outline font-medium text-lg opacity-40">C</span>
+<span class="text-outline font-medium text-lg opacity-40">D</span>
+<span class="text-outline font-medium text-lg opacity-40">E</span>
+<span class="text-outline font-medium text-lg opacity-40">F</span>
+<span class="text-secondary font-bold text-lg">G</span>
+<span class="text-outline font-medium text-lg opacity-40">H</span>
+<span class="text-secondary font-bold text-lg">I</span>
+<span class="text-outline font-medium text-lg opacity-40">...</span>
+</section>
+<!-- Featured Term: Autophagie -->
+<section>
+<div class="glass-panel rounded-3xl p-lg space-y-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/10 blur-3xl -mr-16 -mt-16"></div>
+<div class="flex justify-between items-start">
+<div class="space-y-xs">
+<span class="text-secondary text-label-sm tracking-widest">CONCEPT SCIENTIFIQUE</span>
+<h1 class="font-h1 text-h1 text-white">Autophagie</h1>
+</div>
+<div class="bg-secondary-container/20 p-3 rounded-2xl border border-secondary/30">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">science</span>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-lg">
+<div class="space-y-sm">
+<h3 class="text-secondary font-semibold text-label-sm uppercase">Définition</h3>
+<p class="text-on-surface-variant font-body-md leading-relaxed">
+                            Processus de nettoyage cellulaire où le corps recycle ses propres composants endommagés pour générer de l'énergie et favoriser la régénération cellulaire.
+                        </p>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+<span class="text-outline text-[10px] font-bold uppercase">Impact Vital</span>
+<p class="text-white font-medium">Longévité</p>
+</div>
+<div class="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+<span class="text-outline text-[10px] font-bold uppercase">Activation</span>
+<p class="text-white font-medium">16h - 24h</p>
+</div>
+</div>
+<div class="space-y-md">
+<h3 class="text-secondary font-semibold text-label-sm uppercase">Rôle &amp; Bénéfices</h3>
+<ul class="space-y-sm">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm mt-1">check_circle</span>
+<span class="text-on-surface-variant text-sm">Élimination des protéines toxiques liées aux maladies neurodégénératives.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-sm mt-1">check_circle</span>
+<span class="text-on-surface-variant text-sm">Renforcement du système immunitaire par le recyclage des pathogènes.</span>
+</li>
+</ul>
+</div>
+</div>
+<button class="w-full py-4 rounded-full bg-gradient-to-r from-secondary-container to-[#004c6c] text-white font-bold tracking-tight shadow-lg shadow-secondary/10 hover:scale-[1.02] active:scale-95 transition-all">
+                    Approfondir le sujet
+                </button>
+</div>
+</section>
+<!-- Resources Section -->
+<section class="space-y-lg">
+<div class="flex justify-between items-end">
+<h2 class="font-h2 text-h2 text-white">Ressources Learn</h2>
+<span class="text-secondary text-label-sm font-bold">VOIR TOUT</span>
+</div>
+<div class="flex gap-md overflow-x-auto hide-scrollbar -mx-margin_mobile px-margin_mobile pb-4">
+<!-- Card 1 -->
+<div class="flex-shrink-0 w-72 glass-panel rounded-2xl overflow-hidden group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Microscopic view of cellular structures with glowing neon blue and purple lights, high-tech laboratory aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9ZGEIi_X5LQLq2j7mJ3lu2OPneeH9wSeFtccj-KkIzQhi50y39n5IpMbamg46NKDcnriwDK6mDXpvxd3VYVdHw3CBtX9ao2Va965kbtfq9F0FX-DjfILxgD0P1udJi0ofNGMdjotE1n66rNDQtM_20JePJaRAzTh8KYmyD9_A4AqbNPsDBer_AnG9IgJTX9VKok03lTDVJ1jxhuK9PehSVCsSFuLAhXxow2C4APwWpdcUVS0dFAi_KZ1vPa3JtgLFxQBStBe6iIt7"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
+<div class="absolute top-3 left-3 px-3 py-1 bg-secondary text-[#001e2e] rounded-full text-[10px] font-bold">ARTICLE</div>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="text-white font-bold leading-tight">Le jeûne intermittent : Guide du débutant</h4>
+<div class="flex items-center gap-3 text-outline text-xs">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">schedule</span> 8 min</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">visibility</span> 12k</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="flex-shrink-0 w-72 glass-panel rounded-2xl overflow-hidden group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Cinematic shot of DNA double helix rotating in a dark digital space with floating light particles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPjubrD-78-0pD81RTuv-0PDPiPcI0XwBBGmwdVelUVuOdVgyPIJbzs8ZemgC6UKL_Sgm4q-6K-1_IeI-4T5wUghMN8Rs-H5Y4QWIVRoJ28jZXJMHz7XQabX1v6icrM4YF_Kzklnf2nfJ8awaRcX7W5VVUXS3p0nAxad8E7bCmI25V1iRuDkstbFDZblQBOuh0Z1-NWGYXdOzrMF5F_An9TDz6WXyo2zYC-ubtVA63onoiI0-pDLdst4Qi-P9mPgv0IP42xTZpilCk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-60"></div>
+<div class="absolute top-3 left-3 px-3 py-1 bg-tertiary text-[#002114] rounded-full text-[10px] font-bold">VIDÉO</div>
+</div>
+<div class="p-4 space-y-2">
+<h4 class="text-white font-bold leading-tight">Comprendre le métabolisme en 5 minutes</h4>
+<div class="flex items-center gap-3 text-outline text-xs">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">play_circle</span> 5:12</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">visibility</span> 45k</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#0D2547]/90 backdrop-blur-3xl border-t border-white/5 shadow-[0_-10px_40px_rgba(5,15,29,0.5)] rounded-t-3xl">
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:scale-90 duration-200 ease-out">
+<span class="material-symbols-outlined mb-1">timer</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Fast</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:scale-90 duration-200 ease-out">
+<span class="material-symbols-outlined mb-1">bar_chart</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Stats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:scale-90 duration-200 ease-out">
+<span class="material-symbols-outlined mb-1">groups</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Community</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#3DB4F2] scale-110 transition-all active:scale-90 duration-200 ease-out">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Learn</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 active:scale-90 duration-200 ease-out">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Profile</span>
+</div>
+</nav>
+</body></html>

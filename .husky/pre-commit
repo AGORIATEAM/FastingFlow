@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Block console.log/warn/error in staged TypeScript files
+STAGED_TS=$(git diff --cached --name-only | grep -E '\.(ts|tsx)$')
+if [ -n "$STAGED_TS" ]; then
+  if echo "$STAGED_TS" | xargs grep -l 'console\.' 2>/dev/null; then
+    echo "❌ ERROR: console.log/warn/error found in staged files. Remove them before committing."
+    exit 1
+  fi
+fi
+
+# Run lint-staged (eslint + prettier on staged files)
+./node_modules/.bin/lint-staged

@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "FastLife"
+  },
+  "tabs": {
+    "fasting": "Fasting",
+    "learn": "Learn",
+    "stats": "Stats",
+    "profile": "Profile"
+  },
+  "actions": {
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "later": "Later",
+    "confirm": "Confirm",
+    "back": "Back",
+    "close": "Close",
+    "edit": "Edit",
+    "start": "Start",
+    "stop": "Stop",
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "required": "This field is required.",
+    "invalidEmail": "Invalid email address.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match."
+  },
+  "health": {
+    "disclaimer_short": "This app does not replace medical advice.",
+    "disclaimer_extended": "Extended fasting should be practiced under medical supervision. This app does not replace professional health advice."
+  },
+  "auth": {
+    "guest_prompt_title": "Protect your data",
+    "guest_prompt_message": "Create an account to keep your data safe if you change phones or uninstall the app.",
+    "guest_prompt_cta": "Create account",
+    "guest_data_loss_warning": "Without an account, your data will be lost if you uninstall the app."
+  }
+}

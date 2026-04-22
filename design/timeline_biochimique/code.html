@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#4d5f80",
+                    "primary-fixed-dim": "#b4c7ed",
+                    "on-primary-container": "#7587ab",
+                    "on-secondary-container": "#002d42",
+                    "background": "#131316",
+                    "error-container": "#93000a",
+                    "primary-container": "#0a1f3d",
+                    "on-surface": "#e4e2e5",
+                    "on-surface-variant": "#c5c6ce",
+                    "tertiary-container": "#002517",
+                    "secondary-fixed-dim": "#84cfff",
+                    "on-primary-fixed": "#061b39",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "outline": "#8e9098",
+                    "on-secondary-fixed-variant": "#004c6c",
+                    "on-secondary": "#00344c",
+                    "secondary": "#84cfff",
+                    "surface-container-high": "#292a2c",
+                    "surface-tint": "#b4c7ed",
+                    "on-background": "#e4e2e5",
+                    "on-primary-fixed-variant": "#354767",
+                    "surface-container-lowest": "#0d0e10",
+                    "surface-container": "#1f1f22",
+                    "on-error": "#690005",
+                    "on-secondary-fixed": "#001e2e",
+                    "on-tertiary-fixed": "#002114",
+                    "secondary-container": "#009ad7",
+                    "surface-variant": "#343537",
+                    "outline-variant": "#44474e",
+                    "on-tertiary-container": "#009a6c",
+                    "primary-fixed": "#d6e3ff",
+                    "inverse-surface": "#e4e2e5",
+                    "tertiary-fixed-dim": "#45dfa4",
+                    "on-tertiary": "#003825",
+                    "surface": "#131316",
+                    "on-primary": "#1e304f",
+                    "secondary-fixed": "#c7e7ff",
+                    "tertiary-fixed": "#68fcbf",
+                    "surface-container-low": "#1b1b1e",
+                    "primary": "#b4c7ed",
+                    "surface-container-highest": "#343537",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "surface-dim": "#131316",
+                    "inverse-on-surface": "#303033",
+                    "surface-bright": "#39393c",
+                    "tertiary": "#45dfa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "margin_mobile": "20px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "xxl": "48px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "h1": ["Inter"],
+                    "display-timer": ["Space Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-timer": ["72px", {"lineHeight": "1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #050F1D;
+            color: #e4e2e5;
+        }
+        .glass-card {
+            background: rgba(13, 37, 71, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 247, 250, 0.1);
+        }
+        .timeline-line {
+            width: 2px;
+            background: linear-gradient(to bottom, #3DB4F2, #45dfa4, transparent);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md antialiased min-h-screen pb-32">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-16 bg-[#0D2547]/80 backdrop-blur-2xl dark:bg-[#0D2547]/80 border-b border-white/10 shadow-lg shadow-[#3DB4F2]/5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a man with clean skin and calm expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5HsYqHAU2tbWyhpXM5zSft2ZYN3HjEN2VZ0V0FXtK96kGy2I27jaD2zPepVxYCxjWm94fIvym7jEIlUeN-uj85FTkUG5KhrxPhdw2RFCUWJkcKLp33kmuED7XrnQvl0uxOFzoNKQtyjqEdOr7FwxFQseTb_EGPUMk7gDX6yqgkHieMmyZuNV6wV_bNZ4-tlyd4_czHMMsh6OFvM87OysNWGNxmpOJ8m5FizpXI-Zk_E6giZuMcnEIL_djzFmcRV06B94_chBK6qYl"/>
+</div>
+<span class="text-xl font-bold text-white dark:text-white font-['Inter'] tracking-tight">FastLife</span>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[#3DB4F2] hover:opacity-80 transition-opacity cursor-pointer">local_fire_department</span>
+</div>
+</header>
+<main class="pt-24 px-margin_mobile max-w-2xl mx-auto">
+<div class="mb-xl">
+<h1 class="font-h1 text-h1 text-white mb-xs">Timeline Biochimique</h1>
+<p class="font-body-md text-on-surface-variant">L'évolution métabolique de votre corps pendant le jeûne.</p>
+</div>
+<!-- Timeline Container -->
+<div class="relative flex flex-col gap-lg">
+<!-- Vertical Line -->
+<div class="absolute left-4 top-4 bottom-4 timeline-line"></div>
+<!-- Phase 1: 12h -->
+<div class="relative pl-12">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-secondary-container shadow-[0_0_10px_#3DB4F2]"></div>
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-secondary">12 HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">expand_more</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Épuisement du Glycogène</h3>
+</div>
+</div>
+<!-- Phase 2: 16h -->
+<div class="relative pl-12">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-secondary-container shadow-[0_0_10px_#3DB4F2]"></div>
+<div class="glass-card rounded-xl p-md border-primary/20 bg-primary-container/20">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-secondary">16 HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">expand_more</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Brûlage des Graisses</h3>
+</div>
+</div>
+<!-- Phase 3: 24h (EXPANDED) -->
+<div class="relative pl-12">
+<!-- Current Location Indicator -->
+<div class="absolute -left-20 top-4 px-2 py-1 bg-tertiary-container rounded-full border border-tertiary/30">
+<span class="font-label-sm text-[10px] text-tertiary-fixed whitespace-nowrap uppercase tracking-widest">Tu es ici</span>
+</div>
+<div class="absolute left-2 top-5 w-4 h-4 rounded-full bg-tertiary shadow-[0_0_15px_#45dfa4]"></div>
+<div class="glass-card rounded-xl p-lg border-tertiary/30 ring-1 ring-tertiary/10 bg-surface-container-high/50">
+<div class="flex justify-between items-start mb-md">
+<div>
+<span class="font-label-sm text-label-sm text-tertiary uppercase">24 HEURES</span>
+<h2 class="font-h2 text-h2 text-white mt-1">Cétose complète</h2>
+</div>
+<span class="material-symbols-outlined text-tertiary">expand_less</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-lg leading-relaxed">
+                        À ce stade, vos réserves de foie sont épuisées. Votre corps commence à transformer les graisses en corps cétoniques, fournissant une source d'énergie stable et propre pour votre cerveau.
+                    </p>
+<div class="flex flex-wrap gap-sm mb-lg">
+<span class="px-3 py-1 bg-surface-container-lowest border border-outline-variant/30 rounded-full font-label-sm text-[11px] text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_down</span> Insuline basse
+                        </span>
+<span class="px-3 py-1 bg-surface-container-lowest border border-outline-variant/30 rounded-full font-label-sm text-[11px] text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Cétose active
+                        </span>
+<span class="px-3 py-1 bg-surface-container-lowest border border-outline-variant/30 rounded-full font-label-sm text-[11px] text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_fix_high</span> Autophagie
+                        </span>
+</div>
+<div class="w-full h-32 rounded-lg overflow-hidden relative">
+<img class="w-full h-full object-cover opacity-50" data-alt="Microscopic 3D rendering of healthy cells with blue and cyan bioluminescent glow in a clinical dark environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmjNvsdPzf2niU3YFnU-eDpTSlbHlEsRt3N3ZpcHm9XU6k7FvUxYVU8ewXzw_p8fVhPtiutuX5frRFTsdrTssiHUOZWR6AYkah3DlUIFTltqafMkqssQyDaEYEZW_LqHq4DWOwGN2XVACy4r_rkl0Wf8hN7zGjAL7gFWNbcomjegJG5mPgzLGPVpir9JdrDq4XIa8eXO7wCiOCP2MnD6w1jnXRB-Q6Cp4Y_xLAonEZ8U4LzduRN-5F6jGU4JZtlnNEVs1NOQXe1t7h"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+</div>
+</div>
+</div>
+<!-- Phase 4: 36h -->
+<div class="relative pl-12 opacity-60">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">36 HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Autophagie Profonde</h3>
+</div>
+</div>
+<!-- Phase 5: 48h -->
+<div class="relative pl-12 opacity-60">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">48 HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Pic d'Hormone de Croissance</h3>
+</div>
+</div>
+<!-- Phase 6: 72h -->
+<div class="relative pl-12 opacity-60">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">72 HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Régénération Immunitaire</h3>
+</div>
+</div>
+<!-- Phase 7: 96h+ -->
+<div class="relative pl-12 opacity-60">
+<div class="absolute left-2.5 top-6 w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">96+ HEURES</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">lock</span>
+</div>
+<h3 class="font-h2 text-body-lg text-white mt-1">Réinitialisation Cellulaire</h3>
+</div>
+</div>
+</div>
+<!-- Health Disclaimer -->
+<div class="mt-xxl mb-lg p-lg border-l-2 border-error-container bg-error-container/10 rounded-r-xl">
+<div class="flex items-center gap-2 mb-sm text-error">
+<span class="material-symbols-outlined text-lg">warning</span>
+<span class="font-h2 text-sm uppercase tracking-wider">Avertissement de santé</span>
+</div>
+<p class="font-body-md text-xs text-on-surface-variant leading-relaxed">
+                Les jeûnes de plus de 48 heures doivent être effectués sous surveillance médicale. Assurez-vous de rester hydraté et de consommer des électrolytes. Si vous ressentez des étourdissements ou une faiblesse excessive, rompez votre jeûne immédiatement.
+            </p>
+</div>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#0D2547]/90 backdrop-blur-3xl dark:bg-[#0D2547]/90 border-t border-white/5 shadow-[0_-10px_40px_rgba(5,15,29,0.5)] rounded-t-3xl">
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out cursor-pointer">
+<span class="material-symbols-outlined">timer</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Fast</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out cursor-pointer">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Stats</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out cursor-pointer">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Community</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#3DB4F2] scale-110 transition-all active:scale-90 duration-200 ease-out cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Learn</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out cursor-pointer">
+<span class="material-symbols-outlined">person</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Profile</span>
+</div>
+</nav>
+</body></html>

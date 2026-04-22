@@ -1,0 +1,43 @@
+{
+  "app": {
+    "name": "FastLife"
+  },
+  "tabs": {
+    "fasting": "Jeûne",
+    "learn": "Apprendre",
+    "stats": "Stats",
+    "profile": "Profil"
+  },
+  "actions": {
+    "continue": "Continuer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "later": "Plus tard",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "close": "Fermer",
+    "edit": "Modifier",
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "pause": "Pause",
+    "resume": "Reprendre"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Veuillez réessayer.",
+    "required": "Ce champ est requis.",
+    "invalidEmail": "Adresse email invalide.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas."
+  },
+  "health": {
+    "disclaimer_short": "Cette app ne remplace pas un avis médical.",
+    "disclaimer_extended": "Le jeûne prolongé doit être pratiqué sous supervision médicale. Cette application ne remplace pas un avis professionnel de santé."
+  },
+  "auth": {
+    "guest_prompt_title": "Protège tes données",
+    "guest_prompt_message": "Crée ton compte pour ne pas perdre tes données si tu changes de téléphone ou désinstalles l'app.",
+    "guest_prompt_cta": "Créer un compte",
+    "guest_data_loss_warning": "Sans compte, tes données seront perdues si tu désinstalles l'app."
+  }
+}

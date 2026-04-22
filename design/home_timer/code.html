@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#4d5f80",
+                    "primary-fixed-dim": "#b4c7ed",
+                    "on-primary-container": "#7587ab",
+                    "on-secondary-container": "#002d42",
+                    "background": "#131316",
+                    "error-container": "#93000a",
+                    "primary-container": "#0a1f3d",
+                    "on-surface": "#e4e2e5",
+                    "on-surface-variant": "#c5c6ce",
+                    "tertiary-container": "#002517",
+                    "secondary-fixed-dim": "#84cfff",
+                    "on-primary-fixed": "#061b39",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "outline": "#8e9098",
+                    "on-secondary-fixed-variant": "#004c6c",
+                    "on-secondary": "#00344c",
+                    "secondary": "#84cfff",
+                    "surface-container-high": "#292a2c",
+                    "surface-tint": "#b4c7ed",
+                    "on-background": "#e4e2e5",
+                    "on-primary-fixed-variant": "#354767",
+                    "surface-container-lowest": "#0d0e10",
+                    "surface-container": "#1f1f22",
+                    "on-error": "#690005",
+                    "on-secondary-fixed": "#001e2e",
+                    "on-tertiary-fixed": "#002114",
+                    "secondary-container": "#009ad7",
+                    "surface-variant": "#343537",
+                    "outline-variant": "#44474e",
+                    "on-tertiary-container": "#009a6c",
+                    "primary-fixed": "#d6e3ff",
+                    "inverse-surface": "#e4e2e5",
+                    "tertiary-fixed-dim": "#45dfa4",
+                    "on-tertiary": "#003825",
+                    "surface": "#131316",
+                    "on-primary": "#1e304f",
+                    "secondary-fixed": "#c7e7ff",
+                    "tertiary-fixed": "#68fcbf",
+                    "surface-container-low": "#1b1b1e",
+                    "primary": "#b4c7ed",
+                    "surface-container-highest": "#343537",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "surface-dim": "#131316",
+                    "inverse-on-surface": "#303033",
+                    "surface-bright": "#39393c",
+                    "tertiary": "#45dfa4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "margin_mobile": "20px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "xl": "32px",
+                    "xxl": "48px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "h2": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "h1": ["Inter"],
+                    "display-timer": ["Space Grotesk"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-timer": ["72px", {"lineHeight": "1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .timer-gauge {
+            background: conic-gradient(from 0deg, #3DB4F2 90%, transparent 90%);
+            mask: radial-gradient(farthest-side, transparent 94%, white 95%);
+            -webkit-mask: radial-gradient(farthest-side, transparent 94%, white 95%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-5 h-16 bg-[#0D2547]/80 backdrop-blur-2xl dark:bg-[#0D2547]/80 border-b border-white/10 shadow-lg shadow-[#3DB4F2]/5">
+<div class="flex items-center gap-3">
+<img alt="User profile photo" class="w-8 h-8 rounded-full border border-[#3DB4F2]/20" data-alt="Portrait of a healthy middle-aged man with athletic build, clean clinical aesthetic, soft studio lighting on dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgyR34oIyk0sP2ve2t5kdH3gnrM296pLkJluyDXBAmCA3f3HrUf0VKXAIfb1g13qqBNOjFne-4imTcq2XxaRX_KHllohXiGtaxW_g-sePP_Z3-_BhxYaXS0gRmSVqc8jkZW_STS44Ll9Sz94cQZPn40rQAfU3yBzz7Y5Sc09R8TqBcJ4OVsZRLAnzuTASRI2BNh0ITrph_fNi6jVjotpNp_-JEVqAOg4s34IuP2i1Dc4z7YYAhu-qTk6KkVUAW7kPKJgY6wndoiTiS"/>
+<span class="text-xl font-bold text-white font-['Inter'] tracking-tight">FastLife</span>
+</div>
+<button class="text-[#3DB4F2] hover:opacity-80 transition-opacity active:scale-98 transition-transform">
+<span class="material-symbols-outlined" data-icon="local_fire_department">local_fire_department</span>
+</button>
+</header>
+<main class="flex-1 pt-24 pb-32 px-gutter space-y-xl max-w-lg mx-auto w-full">
+<!-- Status Badge -->
+<div class="flex justify-center">
+<div class="px-4 py-1.5 rounded-full bg-primary-container/30 border border-secondary/20 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(132,207,255,0.6)]"></span>
+<span class="font-label-sm text-secondary uppercase tracking-widest text-[10px]">Phase de transition</span>
+</div>
+</div>
+<!-- Main Timer Section -->
+<section class="relative flex flex-col items-center">
+<!-- Circular Gauge -->
+<div class="relative w-72 h-72 flex items-center justify-center">
+<!-- Background Ring -->
+<div class="absolute inset-0 rounded-full border-[6px] border-surface-container-highest opacity-20"></div>
+<!-- Progress Ring -->
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle cx="144" cy="144" fill="none" r="138" stroke="url(#gradient)" stroke-dasharray="867" stroke-dashoffset="86.7" stroke-linecap="round" stroke-width="8"></circle>
+<defs>
+<lineargradient id="gradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#3DB4F2"></stop>
+<stop offset="100%" stop-color="#45dfa4"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Inner Glass Content -->
+<div class="text-center z-10">
+<h1 class="font-display-timer text-display-timer text-white tabular-nums">14:32:18</h1>
+<p class="font-h2 text-on-surface-variant opacity-60">sur 16h</p>
+</div>
+</div>
+<!-- Subtext -->
+<div class="mt-8 text-center space-y-sm">
+<p class="font-body-md text-on-surface-variant">Prochaine phase : <span class="text-tertiary-fixed-dim font-semibold">Cétogenèse</span> dans 1h27</p>
+</div>
+</section>
+<!-- Primary Action -->
+<div class="px-gutter">
+<button class="w-full py-5 rounded-full bg-gradient-to-r from-secondary-container to-secondary text-on-secondary-fixed font-h2 shadow-[0_8px_24px_rgba(0,154,215,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
+                Arrêter le jeûne
+            </button>
+</div>
+<!-- Quick Actions Grid -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Water Log -->
+<div class="bg-surface-container p-lg rounded-xl border border-white/5 flex flex-col items-center gap-3 glass-effect">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="water_drop">water_drop</span>
+<div class="text-center">
+<p class="font-label-sm text-on-surface-variant uppercase mb-1">Eau</p>
+<p class="font-h2 text-white">1.2L</p>
+</div>
+<button class="mt-2 w-full py-2 rounded-lg bg-secondary/10 border border-secondary/20 text-secondary font-label-sm hover:bg-secondary/20 transition-colors">
+                    + 250ml
+                </button>
+</div>
+<!-- Mood Log -->
+<div class="bg-surface-container p-lg rounded-xl border border-white/5 flex flex-col items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-3xl" data-icon="mood">mood</span>
+<div class="text-center">
+<p class="font-label-sm text-on-surface-variant uppercase mb-1">Humeur</p>
+<p class="font-h2 text-white">Stable</p>
+</div>
+<button class="mt-2 w-full py-2 rounded-lg bg-tertiary/10 border border-tertiary/20 text-tertiary font-label-sm hover:bg-tertiary/20 transition-colors">
+                    Évaluer
+                </button>
+</div>
+<!-- Note Log -->
+<div class="bg-surface-container p-lg rounded-xl border border-white/5 flex flex-col items-center gap-3">
+<span class="material-symbols-outlined text-on-primary-container text-3xl" data-icon="edit_note">edit_note</span>
+<div class="text-center">
+<p class="font-label-sm text-on-surface-variant uppercase mb-1">Note</p>
+<p class="font-body-md text-white/60 italic">Aucune note</p>
+</div>
+<button class="mt-2 w-full py-2 rounded-lg bg-surface-variant text-on-surface-variant font-label-sm hover:bg-surface-container-highest transition-colors">
+                    Ajouter
+                </button>
+</div>
+</section>
+<!-- Scientific Breakdown Card -->
+<section class="bg-[#0D2547] rounded-2xl p-lg border border-white/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl" data-icon="biotech">biotech</span>
+</div>
+<h3 class="font-h2 text-white mb-4">État métabolique</h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                Votre corps commence à puiser dans ses réserves de glycogène hépatique. L'autophagie commencera à s'intensifier d'ici 3 heures.
+            </p>
+<div class="mt-6 flex items-center gap-4">
+<div class="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-3/4"></div>
+</div>
+<span class="font-label-sm text-secondary">75%</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#0D2547]/90 backdrop-blur-3xl dark:bg-[#0D2547]/90 border-t border-white/5 shadow-[0_-10px_40px_rgba(5,15,29,0.5)] rounded-t-3xl">
+<a class="flex flex-col items-center justify-center text-[#3DB4F2] scale-110 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="timer" style="font-variation-settings: 'FILL' 1;">timer</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Fast</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Stats</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Community</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Learn</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-500 opacity-60 hover:text-[#3DB4F2]/80 transition-colors active:scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Profile</span>
+</a>
+</nav>
+</body></html>
