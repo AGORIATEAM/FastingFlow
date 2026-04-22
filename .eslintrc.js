@@ -30,6 +30,13 @@ module.exports = {
       { prefer: 'type-imports' },
     ],
   },
+  overrides: [
+    {
+      files: ['scripts/**/*.ts'],
+      rules: { 'no-console': 'off' },
+      parserOptions: { project: './scripts/tsconfig.json' },
+    },
+  ],
   ignorePatterns: [
     'node_modules/',
     '.expo/',
