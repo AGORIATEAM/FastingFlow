@@ -44,6 +44,18 @@
     "tagline": "Le jeûne, expliqué par la science.",
     "start": "Commencer"
   },
+  "learn": {
+    "tab_timeline": "Timeline",
+    "tab_lexicon": "Lexique",
+    "what_happens": "Ce qui se passe",
+    "mechanisms": "Mécanismes",
+    "body_benefits": "Bienfaits pour le corps",
+    "mind_benefits": "Bienfaits pour l'esprit",
+    "body_impact": "Impact sur le corps",
+    "mind_impact": "Impact sur l'esprit",
+    "see_more": "Voir plus",
+    "see_less": "Voir moins"
+  },
   "timer": {
     "idle_title": "Prêt à jeûner ?",
     "idle_subtitle": "Choisis ton protocole",

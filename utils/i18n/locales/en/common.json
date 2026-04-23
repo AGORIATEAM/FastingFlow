@@ -44,6 +44,18 @@
     "tagline": "Fasting, explained by science.",
     "start": "Get started"
   },
+  "learn": {
+    "tab_timeline": "Timeline",
+    "tab_lexicon": "Lexicon",
+    "what_happens": "What happens",
+    "mechanisms": "Mechanisms",
+    "body_benefits": "Body",
+    "mind_benefits": "Mind",
+    "body_impact": "Body impact",
+    "mind_impact": "Mind impact",
+    "see_more": "See more",
+    "see_less": "See less"
+  },
   "timer": {
     "idle_title": "Ready to fast?",
     "idle_subtitle": "Choose your protocol",
