@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Block console.log/warn/error in staged TypeScript files
-STAGED_TS=$(git diff --cached --name-only | grep -E '\.(ts|tsx)$')
+STAGED_TS=$(git diff --cached --name-only | grep -E '\.(ts|tsx)$' || true)
 if [ -n "$STAGED_TS" ]; then
   if echo "$STAGED_TS" | xargs grep -l 'console\.' 2>/dev/null; then
     echo "❌ ERROR: console.log/warn/error found in staged files. Remove them before committing."
