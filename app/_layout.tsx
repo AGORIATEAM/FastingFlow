@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { bootstrapUser } from '@/lib/auth';
 import { RepositoriesProvider, useRepositories } from '@/lib/repositories/provider';
+import { useUserStore } from '@/lib/stores/useUserStore';
 import { initI18n } from '@/utils/i18n';
 
 SplashScreen.preventAutoHideAsync();
@@ -16,18 +17,20 @@ initI18n();
 function AppBootstrap() {
   const { users } = useRepositories();
   const router = useRouter();
+  const setUser = useUserStore((s) => s.setUser);
 
   useEffect(() => {
     let active = true;
-    bootstrapUser(users).then(({ isFirstLaunch }) => {
+    bootstrapUser(users).then(({ user, isFirstLaunch }) => {
       if (!active) return;
+      setUser(user);
       void SplashScreen.hideAsync();
       router.replace(isFirstLaunch ? '/(auth)/onboarding' : '/(tabs)');
     });
     return () => {
       active = false;
     };
-  }, [users, router]);
+  }, [users, router, setUser]);
 
   return null;
 }

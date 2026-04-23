@@ -43,5 +43,15 @@
   "onboarding": {
     "tagline": "Fasting, explained by science.",
     "start": "Get started"
+  },
+  "timer": {
+    "idle_title": "Ready to fast?",
+    "idle_subtitle": "Choose your protocol",
+    "start": "Start fasting",
+    "stop": "End fast",
+    "of_hours": "goal: {{hours}} h",
+    "duration_hint": "Duration: {{hours}} h",
+    "phase_reached": "Phase {{phase}} reached",
+    "phase_none": "First phase not yet reached"
   }
 }

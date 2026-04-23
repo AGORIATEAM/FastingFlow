@@ -43,5 +43,15 @@
   "onboarding": {
     "tagline": "Le jeûne, expliqué par la science.",
     "start": "Commencer"
+  },
+  "timer": {
+    "idle_title": "Prêt à jeûner ?",
+    "idle_subtitle": "Choisis ton protocole",
+    "start": "Commencer le jeûne",
+    "stop": "Terminer le jeûne",
+    "of_hours": "objectif : {{hours}} h",
+    "duration_hint": "Durée : {{hours}} h",
+    "phase_reached": "Phase {{phase}} atteinte",
+    "phase_none": "Première phase pas encore atteinte"
   }
 }
