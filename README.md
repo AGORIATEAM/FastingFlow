@@ -21,6 +21,16 @@ npx expo run:ios --device   # iPhone réel (compte Apple gratuit : app valable 7
 
 > Pas d'EAS/TestFlight pour l'instant (compte Apple Developer gratuit). `eas.json` sera ajouté avec le passage au compte payant.
 
+## Authentification (Supabase)
+
+L'app fonctionne à 100 % hors-ligne en mode invité. Pour activer la création de compte (email/mot de passe) :
+
+1. Créer un projet gratuit sur [supabase.com](https://supabase.com).
+2. Copier `.env.example` vers `.env` et remplir `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY` (dashboard → Settings → API).
+3. Relancer le bundler. Sans `.env`, l'écran de connexion affiche un mode « bientôt disponible » et le mode invité reste seul actif.
+
+À l'inscription/connexion, les données locales du mode invité (jeûnes, journal, phases) sont rattachées au compte — rien n'est perdu. La synchronisation serveur viendra dans une phase ultérieure (les données restent local-first).
+
 ## Scripts
 
 | Script                     | Rôle                                                                  |
