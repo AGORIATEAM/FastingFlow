@@ -1,44 +1,25 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  Alert,
-  Dimensions,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Circle, Svg, Path } from 'react-native-svg';
 
+import {
+  EmptyState,
+  GlassCard,
+  PressableScale,
+  Screen,
+  SectionTitle,
+  Skeleton,
+  StatTile,
+} from '@/components/ui';
 import { calculateStreak } from '@/lib/domain/fasting';
+import { haptics } from '@/lib/haptics';
 import { useRepositories } from '@/lib/repositories/provider';
 import type { FastSession } from '@/lib/schemas';
 import { useUserStore } from '@/lib/stores/useUserStore';
-
-const { width: SW } = Dimensions.get('window');
-const CONTENT_W = SW - 40; // 20px padding each side
-
-// ─── Design tokens ──────────────────────────────────────────────────
-const C = {
-  bg: '#050F1D',
-  surface: '#131316',
-  deepBlue: '#0D2547',
-  glass: 'rgba(13, 37, 71, 0.45)',
-  glassBorder: 'rgba(245, 247, 250, 0.10)',
-  glassBorderDim: 'rgba(255, 255, 255, 0.06)',
-  cyan: '#3DB4F2',
-  secondary: '#84cfff',
-  secondaryContainer: '#009ad7',
-  tertiary: '#45dfa4',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  primaryContainer: '#0a1f3d',
-  white: '#ffffff',
-  divider: 'rgba(255,255,255,0.06)',
-};
+import { Colors, Header, Radius, Spacing } from '@/lib/theme';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -78,16 +59,16 @@ function cutoffMs(period: Period): number {
 
 // ─── SVG Icons ──────────────────────────────────────────────────────
 
-function ClockIcon({ color = C.secondary }: { color?: string }) {
+function ClockIcon({ color = Colors.secondary, size = 18 }: { color?: string; size?: number }) {
   return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
       <Path d="M12 7v5l3 2" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
     </Svg>
   );
 }
 
-function BoltIcon({ color = C.tertiary }: { color?: string }) {
+function BoltIcon({ color = Colors.tertiary }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -101,12 +82,12 @@ function BoltIcon({ color = C.tertiary }: { color?: string }) {
   );
 }
 
-function TrophyIcon() {
+function TrophyIcon({ color = Colors.secondary }: { color?: string }) {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
       <Path
         d="M8 21h8M12 17v4M7 4H4a1 1 0 00-1 1v3c0 2.21 1.79 4 4 4h.5M17 4h3a1 1 0 011 1v3c0 2.21-1.79 4-4 4h-.5M7 4h10v7a5 5 0 01-10 0V4z"
-        stroke={C.secondary}
+        stroke={color}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -115,12 +96,12 @@ function TrophyIcon() {
   );
 }
 
-function CheckIcon() {
+function CheckIcon({ color = Colors.tertiary }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
         d="M20 6L9 17l-5-5"
-        stroke={C.tertiary}
+        stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -132,7 +113,12 @@ function CheckIcon() {
 function ChevronIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Path d="M9 18l6-6-6-6" stroke={C.onSurfaceVariant} strokeWidth="1.5" strokeLinecap="round" />
+      <Path
+        d="M9 18l6-6-6-6"
+        stroke={Colors.onSurfaceVariant}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </Svg>
   );
 }
@@ -142,7 +128,7 @@ function FlameIcon() {
     <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
       <Path
         d="M12 2C10.5 5 8 8 8 11c0 .88.18 1.72.5 2.5C7.55 12.5 7 11 7 9.5c0 0-3 3-3 6.5C4 19.64 7.58 23 12 23s8-3.36 8-7c0-3.5-3-6.5-5-8C15 9 15 10.5 15 12c0 0-1-1.5-1.5-3.5C13 6 12 2 12 2z"
-        fill={C.tertiary}
+        fill={Colors.tertiary}
       />
     </Svg>
   );
@@ -159,18 +145,31 @@ const PERIODS: { id: Period; label: string }[] = [
 function PeriodSelector({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
   return (
     <View style={styles.periodRow}>
-      {PERIODS.map((p) => (
-        <Pressable
-          key={p.id}
-          style={[styles.periodBtn, value === p.id && styles.periodBtnActive]}
-          onPress={() => onChange(p.id)}
-        >
-          <Text style={[styles.periodText, value === p.id && styles.periodTextActive]}>
-            {p.label}
-          </Text>
-          {value === p.id && <View style={styles.periodDot} />}
-        </Pressable>
-      ))}
+      {PERIODS.map((p) => {
+        const selected = value === p.id;
+        return (
+          <PressableScale
+            key={p.id}
+            style={[styles.periodBtn, selected && styles.periodBtnActive]}
+            accessibilityLabel={p.label}
+            accessibilityState={{ selected }}
+            onPress={() => {
+              if (!selected) {
+                haptics.selection();
+                onChange(p.id);
+              }
+            }}
+          >
+            <Text
+              style={[styles.periodText, selected && styles.periodTextActive]}
+              maxFontSizeMultiplier={1.3}
+            >
+              {p.label}
+            </Text>
+            {selected && <View style={styles.periodDot} />}
+          </PressableScale>
+        );
+      })}
     </View>
   );
 }
@@ -190,51 +189,28 @@ function InsightBanner({
     period === 'week' ? 'cette semaine' : period === 'month' ? 'ce mois' : 'cette année';
   const avgH = count > 0 ? totalH / count : 0;
   let message = 'Commencez votre premier jeûne pour voir vos statistiques.';
-  let accent = C.onSurfaceVariant;
+  let accent: string = Colors.onSurfaceVariant;
 
   if (count > 0) {
     if (avgH >= 18) {
       message = `Excellent ! Moyenne de ${avgH.toFixed(1)}h ${periodLabel}.`;
-      accent = C.tertiary;
+      accent = Colors.tertiary;
     } else if (avgH >= 14) {
       message = `Bien ! ${count} jeûne${count > 1 ? 's' : ''} complété${count > 1 ? 's' : ''} ${periodLabel}.`;
-      accent = C.secondary;
+      accent = Colors.secondary;
     } else {
       message = `${count} jeûne${count > 1 ? 's' : ''} ${periodLabel}. Continuez sur votre lancée !`;
-      accent = C.secondary;
+      accent = Colors.secondary;
     }
   }
 
   return (
-    <View style={[styles.insightBanner, { borderLeftColor: accent }]}>
+    <GlassCard style={[styles.insightBanner, { borderLeftColor: accent }]}>
       <FlameIcon />
-      <Text style={[styles.insightText, { color: accent }]}>{message}</Text>
-    </View>
-  );
-}
-
-// ─── KPI strip ───────────────────────────────────────────────────────
-
-interface Kpi {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sub: string;
-  accent: string;
-}
-
-function KpiStrip({ kpis }: { kpis: Kpi[] }) {
-  return (
-    <View style={styles.kpiStrip}>
-      {kpis.map((k, i) => (
-        <View key={i} style={[styles.kpiCard, i < kpis.length - 1 && styles.kpiCardBorder]}>
-          <View style={styles.kpiTop}>{k.icon}</View>
-          <Text style={styles.kpiValue}>{k.value}</Text>
-          <Text style={[styles.kpiSub, { color: k.accent }]}>{k.sub}</Text>
-          <Text style={styles.kpiLabel}>{k.label}</Text>
-        </View>
-      ))}
-    </View>
+      <Text style={[styles.insightText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+        {message}
+      </Text>
+    </GlassCard>
   );
 }
 
@@ -242,13 +218,15 @@ function KpiStrip({ kpis }: { kpis: Kpi[] }) {
 
 function LongestFastCard({ ms, completionRate }: { ms: number; completionRate: number }) {
   return (
-    <View style={styles.longestCard}>
+    <GlassCard style={styles.longestCard}>
       <View>
-        <Text style={styles.longestLabel}>Plus Long Jeûne</Text>
+        <Text style={styles.longestLabel} maxFontSizeMultiplier={1.3}>
+          Plus Long Jeûne
+        </Text>
         <Text style={styles.longestValue}>{ms > 0 ? formatDuration(ms) : '—'}</Text>
         <View style={styles.longestMeta}>
           <CheckIcon />
-          <Text style={styles.longestMetaText}>
+          <Text style={styles.longestMetaText} maxFontSizeMultiplier={1.3}>
             {completionRate > 0
               ? `${completionRate}% de taux de complétion`
               : 'Aucun jeûne enregistré'}
@@ -258,7 +236,7 @@ function LongestFastCard({ ms, completionRate }: { ms: number; completionRate: n
       <View style={styles.trophyBadge}>
         <TrophyIcon />
       </View>
-    </View>
+    </GlassCard>
   );
 }
 
@@ -287,9 +265,11 @@ function BarChart({
 }) {
   const maxHours = Math.max(...data.map((d) => d.hours), showGoal ? GOAL_H : 0, 1);
   const goalLineH = (GOAL_H / maxHours) * BAR_MAX_H;
+  const bestH = Math.max(...data.map((d) => d.hours), 0);
+  const chartSummary = `${title}. Moyenne ${average.toFixed(1)} heures par jour sur la période, maximum ${bestH.toFixed(0)} heures.`;
 
   return (
-    <View style={styles.card}>
+    <GlassCard style={styles.chartCard}>
       {/* Header */}
       <View style={styles.cardHeader}>
         <View>
@@ -297,27 +277,41 @@ function BarChart({
           {showGoal && (
             <View style={styles.chartSubRow}>
               <View style={styles.legendDot} />
-              <Text style={styles.chartSub}>Objectif {GOAL_H}h / jour</Text>
+              <Text style={styles.chartSub} maxFontSizeMultiplier={1.3}>
+                Objectif {GOAL_H}h / jour
+              </Text>
             </View>
           )}
         </View>
         <View style={styles.avgBadge}>
-          <Text style={styles.avgValue}>{average > 0 ? average.toFixed(1) : '0'}h</Text>
-          <Text style={styles.avgLabel}>moy/j</Text>
+          <Text style={styles.avgValue} maxFontSizeMultiplier={1.3}>
+            {average > 0 ? average.toFixed(1) : '0'}h
+          </Text>
+          <Text style={styles.avgLabel} maxFontSizeMultiplier={1.3}>
+            moy/j
+          </Text>
         </View>
       </View>
 
       {/* Bars with goal line */}
-      <View style={styles.chartArea}>
+      <View style={styles.chartArea} accessible accessibilityLabel={chartSummary}>
         {/* Dashed goal line */}
         {showGoal && (
-          <View style={[styles.goalLine, { bottom: goalLineH + 20 }]}>
+          <View
+            style={[styles.goalLine, { bottom: goalLineH + 20 }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
             <View style={styles.goalLineDash} />
             <Text style={styles.goalLineLabel}>{GOAL_H}h</Text>
           </View>
         )}
 
-        <View style={styles.barsRow}>
+        <View
+          style={styles.barsRow}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {data.map((d, i) => {
             const barH = Math.max((d.hours / maxHours) * BAR_MAX_H, d.hours > 0 ? 6 : 2);
             const meetsGoal = showGoal && d.hours >= GOAL_H;
@@ -326,7 +320,10 @@ function BarChart({
               <View key={i} style={styles.barCol}>
                 {d.hours > 0 && (
                   <Text
-                    style={[styles.barValueLabel, { color: meetsGoal ? C.tertiary : C.secondary }]}
+                    style={[
+                      styles.barValueLabel,
+                      { color: meetsGoal ? Colors.tertiary : Colors.secondary },
+                    ]}
                   >
                     {d.hours.toFixed(0)}h
                   </Text>
@@ -337,20 +334,20 @@ function BarChart({
                       styles.bar,
                       {
                         height: barH,
-                        backgroundColor: meetsGoal ? C.tertiary : C.cyan,
+                        backgroundColor: meetsGoal ? Colors.tertiary : Colors.cyan,
                         opacity: d.hours > 0 ? 1 : 0.12,
                       },
                       isToday && styles.barToday,
                     ]}
                   />
                 </View>
-                <Text style={[styles.barLabel, isToday && { color: C.cyan }]}>{d.day}</Text>
+                <Text style={[styles.barLabel, isToday && { color: Colors.cyan }]}>{d.day}</Text>
               </View>
             );
           })}
         </View>
       </View>
-    </View>
+    </GlassCard>
   );
 }
 
@@ -358,7 +355,18 @@ function BarChart({
 
 const DAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const CELL_GAP = 4;
-const CELL_W = (CONTENT_W - 22 - CELL_GAP * 6) / 7; // 22px = left label column
+const HEAT_LABEL_W = 14;
+const HEAT_CONTAINER_GAP = 6;
+
+/** Intensity (0–1) → heat cell color, derived from the tertiary token. */
+function heatColor(v: number): string {
+  if (v === 0) return Colors.primaryContainer;
+  if (v >= 1) return Colors.tertiary;
+  const alpha = Math.round(v * 255)
+    .toString(16)
+    .padStart(2, '0');
+  return `${Colors.tertiary}${alpha}`;
+}
 
 interface HeatCell {
   date: string;
@@ -366,6 +374,11 @@ interface HeatCell {
 }
 
 function Heatmap({ cells, startDate }: { cells: HeatCell[]; startDate: Date }) {
+  const { width } = useWindowDimensions();
+  // Screen padding (lg ×2) + card padding (md ×2) + label column + column gap.
+  const gridW = width - Spacing.lg * 2 - Spacing.md * 2 - HEAT_LABEL_W - HEAT_CONTAINER_GAP;
+  const cellW = (gridW - CELL_GAP * 6) / 7;
+
   function intensity(hours: number) {
     if (hours === 0) return 0;
     if (hours < 8) return 0.2;
@@ -374,32 +387,38 @@ function Heatmap({ cells, startDate }: { cells: HeatCell[]; startDate: Date }) {
     return 1;
   }
 
-  const weeks = [];
-  for (let i = 0; i < cells.length; i += 7) {
-    weeks.push(cells.slice(i, i + 7));
-  }
+  const activeDays = cells.filter((c) => c.hours > 0).length;
+  const heatSummary = `Calendrier d'activité des ${cells.length} derniers jours : ${activeDays} jour${activeDays > 1 ? 's' : ''} avec jeûne.`;
 
   return (
-    <View style={styles.card}>
+    <GlassCard style={styles.chartCard}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>Calendrier d'activité</Text>
-        <Text style={styles.heatRange}>
+        <Text style={styles.heatRange} maxFontSizeMultiplier={1.3}>
           {startDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} – aujourd'hui
         </Text>
       </View>
 
-      <View style={styles.heatContainer}>
+      <View style={styles.heatContainer} accessible accessibilityLabel={heatSummary}>
         {/* Day labels */}
-        <View style={styles.heatDayLabels}>
+        <View
+          style={styles.heatDayLabels}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {DAY_LABELS.map((d, i) => (
-            <Text key={i} style={styles.heatDayLabel}>
+            <Text key={i} style={[styles.heatDayLabel, { height: cellW, lineHeight: cellW }]}>
               {d}
             </Text>
           ))}
         </View>
 
         {/* Grid */}
-        <View style={styles.heatGrid}>
+        <View
+          style={styles.heatGrid}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
           {cells.map((cell, i) => {
             const v = intensity(cell.hours);
             const isToday = cell.date === isoDate(new Date());
@@ -408,7 +427,7 @@ function Heatmap({ cells, startDate }: { cells: HeatCell[]; startDate: Date }) {
                 key={i}
                 style={[
                   styles.heatCell,
-                  { backgroundColor: v === 0 ? C.primaryContainer : `rgba(69,223,164,${v})` },
+                  { width: cellW, height: cellW, backgroundColor: heatColor(v) },
                   isToday && styles.heatCellToday,
                 ]}
               />
@@ -418,35 +437,53 @@ function Heatmap({ cells, startDate }: { cells: HeatCell[]; startDate: Date }) {
       </View>
 
       {/* Legend */}
-      <View style={styles.heatLegend}>
+      <View
+        style={styles.heatLegend}
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
         <Text style={styles.legendSmall}>Inactif</Text>
         <View style={styles.heatLegendDots}>
           {[0, 0.2, 0.5, 0.75, 1].map((v, i) => (
-            <View
-              key={i}
-              style={[
-                styles.heatLegendDot,
-                { backgroundColor: v === 0 ? C.primaryContainer : `rgba(69,223,164,${v})` },
-              ]}
-            />
+            <View key={i} style={[styles.heatLegendDot, { backgroundColor: heatColor(v) }]} />
           ))}
         </View>
         <Text style={styles.legendSmall}>Objectif</Text>
       </View>
-    </View>
+    </GlassCard>
   );
 }
 
 // ─── Recent fasts ────────────────────────────────────────────────────
 
 function completionColor(pct: number): string {
-  if (pct >= 100) return C.tertiary;
-  if (pct >= 70) return C.secondary;
-  return C.onSurfaceVariant;
+  if (pct >= 100) return Colors.tertiary;
+  if (pct >= 70) return Colors.secondary;
+  return Colors.onSurfaceVariant;
+}
+
+/** Duration-tiered badge icon: ≥18h trophy, ≥14h check, otherwise clock. */
+function durationBadge(actualH: number) {
+  if (actualH >= 18) return <TrophyIcon color={Colors.tertiary} />;
+  if (actualH >= 14) return <CheckIcon color={Colors.secondary} />;
+  return <ClockIcon color={Colors.mutedText} />;
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.detailRow}>
+      <Text style={styles.detailLabel} maxFontSizeMultiplier={1.3}>
+        {label}
+      </Text>
+      <Text style={styles.detailValue} maxFontSizeMultiplier={1.3}>
+        {value}
+      </Text>
+    </View>
+  );
 }
 
 function RecentFastCard({ session }: { session: FastSession }) {
-  const [pressed, setPressed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ms = durationMs(session);
   const actualH = msToHours(ms);
   const pct =
@@ -461,62 +498,69 @@ function RecentFastCard({ session }: { session: FastSession }) {
   if (isoDate(d) === isoDate(today)) dateStr = "Aujourd'hui";
   else if (isoDate(d) === isoDate(yesterday)) dateStr = 'Hier';
 
+  const durationLabel = ms > 0 ? formatDuration(ms) : `${session.plannedDurationH}h prévu`;
+
   return (
-    <Pressable
-      style={[styles.recentCard, pressed && styles.recentCardPressed]}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      onPress={() =>
-        Alert.alert(
-          `Jeûne du ${dateStr}`,
-          `Protocole : ${session.protocol}\nDurée : ${ms > 0 ? formatDuration(ms) : `${session.plannedDurationH}h prévu`}\nComplétion : ${pct}%`,
-          [{ text: 'OK' }]
-        )
-      }
-    >
-      {/* Left: emoji + info */}
-      <View style={styles.recentLeft}>
-        <View style={styles.recentIconBox}>
-          <Text style={{ fontSize: 20 }}>
-            {actualH >= 20 ? '🏆' : actualH >= 16 ? '✅' : actualH >= 12 ? '👍' : '⏱️'}
-          </Text>
-        </View>
-        <View style={styles.recentInfo}>
-          <Text style={styles.recentDate}>{dateStr}</Text>
-          <Text style={styles.recentMeta}>
-            {session.protocol} ·{' '}
-            {ms > 0 ? formatDuration(ms) : `${session.plannedDurationH}h prévu`}
-          </Text>
-          {/* Mini completion bar */}
-          <View style={styles.recentBar}>
-            <View
-              style={[
-                styles.recentBarFill,
-                { width: `${pct}%`, backgroundColor: completionColor(pct) },
-              ]}
-            />
+    <GlassCard padded={false} style={styles.recentCard}>
+      <PressableScale
+        haptic="selection"
+        onPress={() => setExpanded((e) => !e)}
+        style={styles.recentRow}
+        accessibilityLabel={`Jeûne du ${dateStr}, ${session.protocol}, ${durationLabel}, complétion ${pct}%`}
+        accessibilityState={{ expanded }}
+      >
+        {/* Left: badge + info */}
+        <View style={styles.recentLeft}>
+          <View style={styles.recentIconBox}>{durationBadge(actualH)}</View>
+          <View style={styles.recentInfo}>
+            <Text style={styles.recentDate} maxFontSizeMultiplier={1.3}>
+              {dateStr}
+            </Text>
+            <Text style={styles.recentMeta} maxFontSizeMultiplier={1.3}>
+              {session.protocol} · {durationLabel}
+            </Text>
+            {/* Mini completion bar */}
+            <View style={styles.recentBar}>
+              <View
+                style={[
+                  styles.recentBarFill,
+                  { width: `${pct}%`, backgroundColor: completionColor(pct) },
+                ]}
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Right: pct + chevron */}
-      <View style={styles.recentRight}>
-        <Text style={[styles.recentPct, { color: completionColor(pct) }]}>{pct}%</Text>
-        <ChevronIcon />
-      </View>
-    </Pressable>
+        {/* Right: pct + chevron */}
+        <View style={styles.recentRight}>
+          <Text style={[styles.recentPct, { color: completionColor(pct) }]}>{pct}%</Text>
+          <View style={expanded && styles.chevronExpanded}>
+            <ChevronIcon />
+          </View>
+        </View>
+      </PressableScale>
+
+      {expanded && (
+        <Animated.View entering={FadeInDown.duration(180)} style={styles.recentDetails}>
+          <DetailRow label="Durée" value={durationLabel} />
+          <DetailRow label="Protocole" value={session.protocol} />
+          <DetailRow label="Complétion" value={`${pct}%`} />
+          {session.notes ? <DetailRow label="Note" value={session.notes} /> : null}
+        </Animated.View>
+      )}
+    </GlassCard>
   );
 }
 
 function EmptyFasts() {
   return (
-    <View style={styles.emptyCard}>
-      <Text style={styles.emptyIcon}>🌅</Text>
-      <Text style={styles.emptyTitle}>Aucun jeûne enregistré</Text>
-      <Text style={styles.emptyBody}>
-        Démarrez votre premier jeûne depuis l'onglet Fast pour commencer à suivre vos progrès.
-      </Text>
-    </View>
+    <GlassCard padded={false}>
+      <EmptyState
+        icon={<ClockIcon color={Colors.mutedText} size={32} />}
+        title="Aucun jeûne enregistré"
+        body="Démarrez votre premier jeûne depuis l'onglet Fast pour commencer à suivre vos progrès."
+      />
+    </GlassCard>
   );
 }
 
@@ -530,6 +574,7 @@ export default function StatsScreen() {
   const [sessions, setSessions] = useState<FastSession[]>([]);
   const [recent, setRecent] = useState<FastSession[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -542,6 +587,8 @@ export default function StatsScreen() {
       setRecent(rec);
     } catch {
       // Keep last known data on transient DB errors
+    } finally {
+      setLoading(false);
     }
   }, [user, fastSessions]);
 
@@ -658,81 +705,92 @@ export default function StatsScreen() {
     return { date: dateStr, hours: dayH };
   });
 
-  const kpis = [
-    {
-      icon: <ClockIcon />,
-      label: 'Heures',
-      value: Math.round(totalH) > 0 ? `${Math.round(totalH)}h` : '—',
-      sub: 'total',
-      accent: C.secondary,
-    },
-    {
-      icon: <BoltIcon />,
-      label: 'Série',
-      value: String(streak),
-      sub: 'jours',
-      accent: C.tertiary,
-    },
-    {
-      icon: <ClockIcon color={C.cyan} />,
-      label: 'Moyenne',
-      value: avgH > 0 ? `${avgH.toFixed(1)}h` : '—',
-      sub: 'par jeûne',
-      accent: C.cyan,
-    },
-  ];
+  const recentCompleted = recent.filter((s) => s.status === 'completed');
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.root} edges={['top']}>
       {/* App bar */}
       <View style={styles.appBar}>
         <Text style={styles.appBarBrand}>FastLife</Text>
         <View style={styles.appBarRight}>
-          <Text style={styles.appBarTitle}>Statistiques</Text>
+          <Text style={styles.appBarTitle} maxFontSizeMultiplier={1.3}>
+            Statistiques
+          </Text>
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+      <Screen
+        scroll
+        contentStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.cyan} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.cyan} />
         }
       >
         <PeriodSelector value={period} onChange={setPeriod} />
 
-        <InsightBanner totalH={totalH} count={completedCount} period={period} />
+        {loading ? (
+          <>
+            <Skeleton height={64} radius={Radius.md} />
+            <Skeleton height={118} radius={Radius.xl} />
+            <Skeleton height={96} radius={Radius.xl} />
+            <Skeleton height={230} radius={Radius.xl} />
+          </>
+        ) : (
+          <>
+            <InsightBanner totalH={totalH} count={completedCount} period={period} />
 
-        <KpiStrip kpis={kpis} />
+            {/* KPI strip */}
+            <View style={styles.kpiRow}>
+              <StatTile
+                style={styles.kpiTile}
+                icon={<ClockIcon />}
+                label="Heures"
+                value={Math.round(totalH) > 0 ? `${Math.round(totalH)}h` : '—'}
+                sub="total"
+                accent={Colors.secondary}
+              />
+              <StatTile
+                style={styles.kpiTile}
+                icon={<BoltIcon />}
+                label="Série"
+                value={String(streak)}
+                sub="jours"
+                accent={Colors.tertiary}
+              />
+              <StatTile
+                style={styles.kpiTile}
+                icon={<ClockIcon color={Colors.cyan} />}
+                label="Moyenne"
+                value={avgH > 0 ? `${avgH.toFixed(1)}h` : '—'}
+                sub="par jeûne"
+                accent={Colors.cyan}
+              />
+            </View>
 
-        <LongestFastCard ms={longestMs} completionRate={completionRate} />
+            <LongestFastCard ms={longestMs} completionRate={completionRate} />
 
-        <BarChart
-          title={chartTitle}
-          data={chartBars}
-          average={chartAvg}
-          showGoal={chartShowGoal}
-          highlightLabel={chartHighlight}
-        />
+            <BarChart
+              title={chartTitle}
+              data={chartBars}
+              average={chartAvg}
+              showGoal={chartShowGoal}
+              highlightLabel={chartHighlight}
+            />
 
-        <Heatmap cells={heatCells} startDate={heatStart} />
+            <Heatmap cells={heatCells} startDate={heatStart} />
 
-        {/* Recent fasts */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Jeûnes récents</Text>
-          </View>
-          {recent.filter((s) => s.status === 'completed').length === 0 ? (
-            <EmptyFasts />
-          ) : (
-            recent
-              .filter((s) => s.status === 'completed')
-              .slice(0, 5)
-              .map((s) => <RecentFastCard key={s.id} session={s} />)
-          )}
-        </View>
-      </ScrollView>
+            {/* Recent fasts */}
+            <View style={styles.section}>
+              <SectionTitle title="Jeûnes récents" />
+              {recentCompleted.length === 0 ? (
+                <EmptyFasts />
+              ) : (
+                recentCompleted.slice(0, 5).map((s) => <RecentFastCard key={s.id} session={s} />)
+              )}
+            </View>
+          </>
+        )}
+      </Screen>
     </SafeAreaView>
   );
 }
@@ -740,50 +798,45 @@ export default function StatsScreen() {
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bg },
+  root: { flex: 1, backgroundColor: Colors.bg },
 
   appBar: {
-    height: 56,
+    height: Header.height,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(13,37,71,0.88)',
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Header.bg,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: Header.borderColor,
   },
-  appBarBrand: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3, color: C.white },
-  appBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  appBarTitle: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant },
+  appBarBrand: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3, color: Colors.white },
+  appBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  appBarTitle: { fontSize: 13, fontWeight: '600', color: Colors.onSurfaceVariant },
 
-  scroll: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100, gap: 16 },
+  content: { paddingTop: Spacing.lg, gap: Spacing.md },
 
   // Period selector — full width
   periodRow: {
     flexDirection: 'row',
-    backgroundColor: C.glass,
+    backgroundColor: Colors.glass,
     borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 16,
+    borderColor: Colors.glassBorder,
+    borderRadius: Radius.md,
     padding: 4,
   },
   periodBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 13, gap: 4 },
-  periodBtnActive: { backgroundColor: C.deepBlue },
-  periodText: { fontSize: 13, fontWeight: '600', color: C.onSurfaceVariant },
-  periodTextActive: { color: C.white },
-  periodDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: C.cyan },
+  periodBtnActive: { backgroundColor: Colors.deepBlue },
+  periodText: { fontSize: 13, fontWeight: '600', color: Colors.onSurfaceVariant },
+  periodTextActive: { color: Colors.white },
+  periodDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: Colors.cyan },
 
   // Insight banner
   insightBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
     borderLeftWidth: 3,
     borderRadius: 14,
     borderTopLeftRadius: 4,
@@ -792,71 +845,49 @@ const styles = StyleSheet.create({
   insightText: { fontSize: 13, fontWeight: '500', flex: 1, lineHeight: 18 },
 
   // KPI strip
-  kpiStrip: {
-    flexDirection: 'row',
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 20,
-  },
-  kpiCard: { flex: 1, paddingVertical: 16, paddingHorizontal: 12, alignItems: 'center', gap: 3 },
-  kpiCardBorder: { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: C.glassBorderDim },
-  kpiTop: { marginBottom: 4 },
-  kpiValue: { fontSize: 22, fontWeight: '700', color: C.white, letterSpacing: -0.5 },
-  kpiSub: { fontSize: 10, fontWeight: '600' },
-  kpiLabel: { fontSize: 10, color: C.onSurfaceVariant, fontWeight: '500', letterSpacing: 0.3 },
+  kpiRow: { flexDirection: 'row', gap: Spacing.sm },
+  kpiTile: { flex: 1 },
 
   // Longest fast card
   longestCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 18,
   },
   longestLabel: {
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.2,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
     marginBottom: 4,
   },
-  longestValue: { fontSize: 26, fontWeight: '700', color: C.white, letterSpacing: -0.8 },
+  longestValue: { fontSize: 26, fontWeight: '700', color: Colors.white, letterSpacing: -0.8 },
   longestMeta: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
-  longestMetaText: { fontSize: 11, color: C.onSurfaceVariant },
+  longestMetaText: { fontSize: 11, color: Colors.onSurfaceVariant },
   trophyBadge: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(132,207,255,0.10)',
+    backgroundColor: `${Colors.secondary}1A`,
     borderWidth: 1,
-    borderColor: `${C.secondary}30`,
+    borderColor: `${Colors.secondary}30`,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Generic card
-  card: {
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 24,
-    padding: 20,
-    gap: 16,
-  },
+  // Chart / heatmap cards
+  chartCard: { gap: Spacing.md },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: C.white },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.white },
   chartSubRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
-  legendDot: { width: 6, height: 2, borderRadius: 1, backgroundColor: `${C.tertiary}80` },
-  chartSub: { fontSize: 11, color: C.onSurfaceVariant },
+  legendDot: { width: 6, height: 2, borderRadius: 1, backgroundColor: `${Colors.tertiary}80` },
+  chartSub: { fontSize: 11, color: Colors.onSurfaceVariant },
   avgBadge: { alignItems: 'flex-end' },
-  avgValue: { fontSize: 22, fontWeight: '700', color: C.secondary, letterSpacing: -0.5 },
-  avgLabel: { fontSize: 10, color: C.onSurfaceVariant, marginTop: 1 },
+  avgValue: { fontSize: 22, fontWeight: '700', color: Colors.secondary, letterSpacing: -0.5 },
+  avgLabel: { fontSize: 10, color: Colors.onSurfaceVariant, marginTop: 1 },
 
   // Bar chart
   chartArea: { position: 'relative' },
@@ -873,11 +904,11 @@ const styles = StyleSheet.create({
     height: 1,
     borderWidth: StyleSheet.hairlineWidth,
     borderStyle: 'dashed',
-    borderColor: `${C.tertiary}50`,
+    borderColor: `${Colors.tertiary}50`,
   },
   goalLineLabel: {
     fontSize: 9,
-    color: C.tertiary,
+    color: Colors.tertiary,
     fontWeight: '600',
     width: 20,
     textAlign: 'right',
@@ -887,28 +918,26 @@ const styles = StyleSheet.create({
   barTrack: { width: '100%', height: BAR_MAX_H, justifyContent: 'flex-end' },
   bar: { width: '100%', borderRadius: 6, minHeight: 3 },
   barToday: {
-    shadowColor: C.cyan,
+    shadowColor: Colors.cyan,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
   },
   barValueLabel: { fontSize: 9, fontWeight: '700', textAlign: 'center' },
-  barLabel: { fontSize: 9, color: C.onSurfaceVariant, fontWeight: '500' },
+  barLabel: { fontSize: 9, color: Colors.onSurfaceVariant, fontWeight: '500' },
 
   // Heatmap
-  heatRange: { fontSize: 11, color: C.onSurfaceVariant },
-  heatContainer: { flexDirection: 'row', gap: 6 },
-  heatDayLabels: { gap: CELL_GAP, paddingTop: 1 },
+  heatRange: { fontSize: 11, color: Colors.onSurfaceVariant },
+  heatContainer: { flexDirection: 'row', gap: HEAT_CONTAINER_GAP },
+  heatDayLabels: { gap: CELL_GAP, paddingTop: 1, width: HEAT_LABEL_W },
   heatDayLabel: {
-    height: CELL_W,
     fontSize: 9,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textAlignVertical: 'center',
-    lineHeight: CELL_W,
   },
   heatGrid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: CELL_GAP },
-  heatCell: { width: CELL_W, height: CELL_W, borderRadius: 3 },
-  heatCellToday: { borderWidth: 1.5, borderColor: C.cyan },
+  heatCell: { borderRadius: 3 },
+  heatCellToday: { borderWidth: 1.5, borderColor: Colors.cyan },
   heatLegend: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -917,65 +946,66 @@ const styles = StyleSheet.create({
   },
   heatLegendDots: { flexDirection: 'row', gap: 4, alignItems: 'center' },
   heatLegendDot: { width: 10, height: 10, borderRadius: 2 },
-  legendSmall: { fontSize: 9, color: C.onSurfaceVariant },
+  legendSmall: { fontSize: 9, color: Colors.onSurfaceVariant },
 
   // Recent fasts
   section: { gap: 10 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: C.white },
-  seeAll: { fontSize: 12, fontWeight: '600', color: C.secondary },
 
-  recentCard: {
+  recentCard: { borderRadius: 18 },
+  recentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 18,
     padding: 14,
   },
-  recentCardPressed: { backgroundColor: 'rgba(13,37,71,0.7)' },
   recentLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   recentIconBox: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: C.primaryContainer,
+    backgroundColor: Colors.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   recentInfo: { flex: 1, gap: 3 },
-  recentDate: { fontSize: 14, fontWeight: '600', color: C.white },
-  recentMeta: { fontSize: 11, color: C.onSurfaceVariant, fontWeight: '500' },
+  recentDate: { fontSize: 14, fontWeight: '600', color: Colors.white },
+  recentMeta: { fontSize: 11, color: Colors.onSurfaceVariant, fontWeight: '500' },
   recentBar: {
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: `${Colors.white}14`,
     overflow: 'hidden',
     marginTop: 2,
   },
   recentBarFill: { height: '100%', borderRadius: 2 },
-  recentRight: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 8 },
+  recentRight: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: Spacing.sm },
   recentPct: { fontSize: 12, fontWeight: '700' },
-
-  // Empty state
-  emptyCard: {
-    alignItems: 'center',
+  chevronExpanded: { transform: [{ rotate: '90deg' }] },
+  recentDetails: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Header.borderColor,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     gap: 8,
-    paddingVertical: 32,
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 20,
   },
-  emptyIcon: { fontSize: 36, marginBottom: 4 },
-  emptyTitle: { fontSize: 15, fontWeight: '600', color: C.white },
-  emptyBody: {
-    fontSize: 13,
-    color: C.onSurfaceVariant,
-    textAlign: 'center',
-    paddingHorizontal: 24,
-    lineHeight: 20,
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+  },
+  detailLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+    color: Colors.mutedText,
+    textTransform: 'uppercase',
+  },
+  detailValue: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    color: Colors.onSurface,
+    textAlign: 'right',
   },
 });

@@ -1,9 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,29 +11,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Svg, Path, Circle } from 'react-native-svg';
-import { useRouter } from 'expo-router';
+import { Circle, Path, Svg } from 'react-native-svg';
 
+import { GlassCard, PressableScale } from '@/components/ui';
 import { goalToDb, parseTargetWeightKg } from '@/lib/domain/profile';
 import { useRepositories } from '@/lib/repositories/provider';
 import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
 import { useUserStore } from '@/lib/stores/useUserStore';
+import { Colors, Fonts, Header, HitSlop, Radius, Spacing, Typography } from '@/lib/theme';
 
-// ─── Design tokens ──────────────────────────────────────────────────
-const C = {
-  bg: '#050F1D',
-  deepBlue: '#0D2547',
-  glass: 'rgba(13, 37, 71, 0.5)',
-  glassBorder: 'rgba(245, 247, 250, 0.10)',
-  inputBg: 'rgba(13, 37, 71, 0.6)',
-  cyan: '#3DB4F2',
-  secondary: '#84cfff',
-  secondaryContainer: '#009ad7',
-  tertiary: '#45dfa4',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  white: '#ffffff',
-};
+/** Dark checkmark stroke on the cyan check disc — no theme token. */
+const CHECK_STROKE_DARK = '#003549';
 
 // ─── Goal options ────────────────────────────────────────────────────
 
@@ -51,7 +39,7 @@ function BackIcon() {
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
       <Path
         d="M19 12H5M12 19l-7-7 7-7"
-        stroke={C.onSurface}
+        stroke={Colors.onSurface}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -63,10 +51,10 @@ function BackIcon() {
 function CheckIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="12" r="9" fill={C.cyan} />
+      <Circle cx="12" cy="12" r="9" fill={Colors.cyan} />
       <Path
         d="M8 12l3 3 5-5"
-        stroke="#003549"
+        stroke={CHECK_STROKE_DARK}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -124,17 +112,31 @@ export default function EditProfileModal() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={16}>
+        <PressableScale
+          onPress={() => router.back()}
+          hitSlop={HitSlop}
+          accessibilityLabel="Retour"
+          style={styles.backBtn}
+        >
           <BackIcon />
-        </Pressable>
-        <Text style={styles.headerTitle}>Modifier le profil</Text>
-        <Pressable style={styles.saveBtn} onPress={save}>
-          <Text style={styles.saveBtnText}>Enregistrer</Text>
-        </Pressable>
+        </PressableScale>
+        <Text style={styles.headerTitle} maxFontSizeMultiplier={1.3}>
+          Modifier le profil
+        </Text>
+        <PressableScale
+          onPress={save}
+          haptic="medium"
+          accessibilityLabel="Enregistrer"
+          style={styles.saveBtn}
+        >
+          <Text style={styles.saveBtnText} maxFontSizeMultiplier={1.3}>
+            Enregistrer
+          </Text>
+        </PressableScale>
       </View>
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
@@ -144,62 +146,81 @@ export default function EditProfileModal() {
         >
           {/* Personal info */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informations personnelles</Text>
+            <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.3}>
+              Informations personnelles
+            </Text>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>PRÉNOM</Text>
+              <Text style={styles.fieldLabel} maxFontSizeMultiplier={1.3}>
+                PRÉNOM
+              </Text>
               <TextInput
                 style={styles.input}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Votre prénom"
-                placeholderTextColor={`${C.onSurfaceVariant}60`}
+                placeholderTextColor={Colors.mutedText}
                 autoCapitalize="words"
                 autoCorrect={false}
                 keyboardAppearance="dark"
+                maxFontSizeMultiplier={1.3}
               />
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>POIDS CIBLE (KG)</Text>
+              <Text style={styles.fieldLabel} maxFontSizeMultiplier={1.3}>
+                POIDS CIBLE (KG)
+              </Text>
               <TextInput
                 style={styles.input}
                 value={weight}
                 onChangeText={setWeight}
                 placeholder="70"
-                placeholderTextColor={`${C.onSurfaceVariant}60`}
+                placeholderTextColor={Colors.mutedText}
                 keyboardType="decimal-pad"
                 keyboardAppearance="dark"
+                maxFontSizeMultiplier={1.3}
               />
             </View>
           </View>
 
           {/* Goal selection */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Objectif principal</Text>
+            <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.3}>
+              Objectif principal
+            </Text>
             <View style={styles.goalList}>
               {GOALS.map((g) => {
                 const active = goal === g.id;
                 return (
-                  <Pressable
+                  <PressableScale
                     key={g.id}
-                    style={[styles.goalCard, active && styles.goalCardActive]}
                     onPress={() => setGoal(g.id)}
+                    haptic="selection"
+                    accessibilityLabel={`${g.label}, ${g.sub}`}
+                    accessibilityState={{ selected: active }}
                   >
-                    <View style={styles.goalCardText}>
-                      <Text style={[styles.goalLabel, active && { color: C.white }]}>
-                        {g.label}
-                      </Text>
-                      <Text style={styles.goalSub}>{g.sub}</Text>
-                    </View>
-                    {active && <CheckIcon />}
-                  </Pressable>
+                    <GlassCard style={[styles.goalCard, active && styles.goalCardActive]}>
+                      <View style={styles.goalCardText}>
+                        <Text
+                          style={[styles.goalLabel, active && styles.goalLabelActive]}
+                          maxFontSizeMultiplier={1.3}
+                        >
+                          {g.label}
+                        </Text>
+                        <Text style={styles.goalSub} maxFontSizeMultiplier={1.3}>
+                          {g.sub}
+                        </Text>
+                      </View>
+                      {active && <CheckIcon />}
+                    </GlassCard>
+                  </PressableScale>
                 );
               })}
             </View>
           </View>
 
-          <View style={{ height: 40 }} />
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -209,57 +230,59 @@ export default function EditProfileModal() {
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bg },
+  safeArea: { flex: 1, backgroundColor: Colors.bg },
+  flex: { flex: 1 },
 
   header: {
-    height: 56,
+    height: Header.height,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(13,37,71,0.88)',
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Header.bg,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: Header.borderColor,
   },
   backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: 16, fontWeight: '600', color: C.white },
+  headerTitle: { fontFamily: Fonts.semibold, fontSize: 16, color: Colors.white },
   saveBtn: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    backgroundColor: C.secondaryContainer,
-    borderRadius: 99,
+    backgroundColor: Colors.secondaryContainer,
+    borderRadius: Radius.full,
   },
-  saveBtnText: { fontSize: 13, fontWeight: '700', color: '#001e2e' },
+  saveBtnText: { fontFamily: Fonts.bold, fontSize: Typography.bodySmall, color: Colors.bg },
 
-  content: { paddingHorizontal: 20, paddingTop: 24, gap: 28 },
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, gap: 28 },
 
   section: { gap: 14 },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
+    fontSize: Typography.bodySmall,
     letterSpacing: 1.2,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
   },
 
   fieldGroup: { gap: 6 },
   fieldLabel: {
+    fontFamily: Fonts.bold,
     fontSize: 10,
-    fontWeight: '700',
     letterSpacing: 1.5,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
-    paddingHorizontal: 4,
+    paddingHorizontal: Spacing.xs,
   },
   input: {
-    backgroundColor: C.inputBg,
+    backgroundColor: `${Colors.deepBlue}99`,
     borderWidth: 1,
-    borderColor: C.glassBorder,
+    borderColor: Colors.glassBorder,
     borderRadius: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 14,
-    fontSize: 15,
-    color: C.white,
+    fontFamily: Fonts.regular,
+    fontSize: Typography.body,
+    color: Colors.white,
   },
 
   goalList: { gap: 10 },
@@ -267,17 +290,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
     borderRadius: 14,
     padding: 14,
   },
   goalCardActive: {
-    backgroundColor: 'rgba(61,180,242,0.10)',
-    borderColor: `${C.cyan}50`,
+    backgroundColor: `${Colors.cyan}1A`,
+    borderColor: `${Colors.cyan}50`,
   },
   goalCardText: { gap: 3 },
-  goalLabel: { fontSize: 15, fontWeight: '600', color: C.onSurface },
-  goalSub: { fontSize: 12, color: C.onSurfaceVariant },
+  goalLabel: { fontFamily: Fonts.semibold, fontSize: Typography.body, color: Colors.onSurface },
+  goalLabelActive: { color: Colors.white },
+  goalSub: {
+    fontFamily: Fonts.regular,
+    fontSize: Typography.label + 1,
+    color: Colors.onSurfaceVariant,
+  },
+
+  bottomSpacer: { height: 40 },
 });

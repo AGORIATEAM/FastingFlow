@@ -1,20 +1,13 @@
 import Constants from 'expo-constants';
 import { useCallback, useState } from 'react';
-import {
-  Alert,
-  Linking,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Linking, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 
+import { GlassCard, ListRow, PressableScale, Screen, SectionTitle } from '@/components/ui';
 import { calculateStreak } from '@/lib/domain/fasting';
+import { haptics } from '@/lib/haptics';
 import {
   cancelScheduledNotifications,
   requestNotificationPermissions,
@@ -25,26 +18,16 @@ import type { FastSession } from '@/lib/schemas';
 import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
 import { useSessionStore } from '@/lib/stores/useSessionStore';
 import { useUserStore } from '@/lib/stores/useUserStore';
+import { Colors, Header, Radius, Spacing } from '@/lib/theme';
 
-// ─── Design tokens ──────────────────────────────────────────────────
-const C = {
-  bg: '#050F1D',
-  surface: '#1f1f22',
-  deepBlue: '#0D2547',
-  glass: 'rgba(13, 37, 71, 0.4)',
-  glassBorder: 'rgba(245, 247, 250, 0.10)',
-  cyan: '#3DB4F2',
-  secondary: '#84cfff',
-  secondaryContainer: '#009ad7',
-  tertiary: '#45dfa4',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  outline: '#8e9098',
-  primaryContainer: '#0a1f3d',
-  error: '#ffb4ab',
-  white: '#ffffff',
-  divider: 'rgba(255,255,255,0.05)',
-};
+// Specific icon accents (no matching token in Colors — kept as named constants).
+const ICON_ACCENTS = {
+  amber: '#fbbf24',
+  violet: '#a78bfa',
+  rose: '#fb7185',
+  emerald: '#34d399',
+  blue: '#60a5fa',
+} as const;
 
 // ─── Level system ────────────────────────────────────────────────────
 
@@ -100,7 +83,7 @@ const GOAL_LABELS: Record<string, string> = {
 
 // ─── SVG Icons ──────────────────────────────────────────────────────
 
-function FlameIcon({ color = C.cyan, size = 20 }: { color?: string; size?: number }) {
+function FlameIcon({ color = Colors.cyan, size = 20 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -114,26 +97,26 @@ function FlameIcon({ color = C.cyan, size = 20 }: { color?: string; size?: numbe
 function TargetIcon() {
   return (
     <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="12" r="9" stroke={C.cyan} strokeWidth="1.5" />
-      <Circle cx="12" cy="12" r="5" stroke={C.cyan} strokeWidth="1.5" />
-      <Circle cx="12" cy="12" r="1" fill={C.cyan} />
+      <Circle cx="12" cy="12" r="9" stroke={Colors.cyan} strokeWidth="1.5" />
+      <Circle cx="12" cy="12" r="5" stroke={Colors.cyan} strokeWidth="1.5" />
+      <Circle cx="12" cy="12" r="1" fill={Colors.cyan} />
     </Svg>
   );
 }
 
 function HeartIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="#fb7185">
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill={ICON_ACCENTS.rose}>
       <Path
         d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
-        stroke="#fb7185"
+        stroke={ICON_ACCENTS.rose}
         strokeWidth="1"
       />
     </Svg>
   );
 }
 
-function BellIcon({ color = C.onSurfaceVariant }: { color?: string }) {
+function BellIcon({ color = Colors.onSurfaceVariant }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -146,7 +129,7 @@ function BellIcon({ color = C.onSurfaceVariant }: { color?: string }) {
   );
 }
 
-function LockIcon({ color = C.onSurfaceVariant }: { color?: string }) {
+function LockIcon({ color = Colors.onSurfaceVariant }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -159,7 +142,7 @@ function LockIcon({ color = C.onSurfaceVariant }: { color?: string }) {
   );
 }
 
-function GlobeIcon({ color = C.onSurfaceVariant }: { color?: string }) {
+function GlobeIcon({ color = Colors.onSurfaceVariant }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
@@ -172,7 +155,7 @@ function GlobeIcon({ color = C.onSurfaceVariant }: { color?: string }) {
   );
 }
 
-function HelpIcon({ color = C.onSurfaceVariant }: { color?: string }) {
+function HelpIcon({ color = Colors.onSurfaceVariant }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
@@ -186,7 +169,7 @@ function HelpIcon({ color = C.onSurfaceVariant }: { color?: string }) {
   );
 }
 
-function ChatIcon({ color = C.onSurfaceVariant }: { color?: string }) {
+function ChatIcon({ color = Colors.onSurfaceVariant }: { color?: string }) {
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -200,20 +183,12 @@ function ChatIcon({ color = C.onSurfaceVariant }: { color?: string }) {
   );
 }
 
-function ChevronIcon() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-      <Path d="M9 18l6-6-6-6" stroke={C.onSurfaceVariant} strokeWidth="1.5" strokeLinecap="round" />
-    </Svg>
-  );
-}
-
 function ExternalIcon() {
   return (
     <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
       <Path
         d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"
-        stroke={C.onSurfaceVariant}
+        stroke={Colors.onSurfaceVariant}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -227,84 +202,12 @@ function LogoutIcon() {
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
         d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
-        stroke={C.error}
+        stroke={Colors.error}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
     </Svg>
-  );
-}
-
-// ─── Settings row ─────────────────────────────────────────────────────
-
-interface SettingsRowProps {
-  icon: React.ReactNode;
-  iconBg?: string;
-  label: string;
-  sublabel?: string;
-  rightElement?: React.ReactNode;
-  onPress?: () => void;
-  chevron?: boolean;
-  externalLink?: boolean;
-  isLast?: boolean;
-}
-
-function SettingsRow({
-  icon,
-  iconBg,
-  label,
-  sublabel,
-  rightElement,
-  onPress,
-  chevron = true,
-  externalLink = false,
-  isLast = false,
-}: SettingsRowProps) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <Pressable
-      style={[
-        styles.settingsRow,
-        !isLast && styles.settingsRowBorder,
-        pressed && styles.settingsRowPressed,
-      ]}
-      onPress={onPress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <View style={styles.settingsRowLeft}>
-        <View style={[styles.settingsIcon, iconBg ? { backgroundColor: iconBg } : null]}>
-          {icon}
-        </View>
-        <View style={styles.settingsTextBlock}>
-          <Text style={styles.settingsLabel} numberOfLines={1}>
-            {label}
-          </Text>
-          {sublabel ? <Text style={styles.settingsSublabel}>{sublabel}</Text> : null}
-        </View>
-      </View>
-      <View style={styles.settingsRowRight}>
-        {rightElement ?? (externalLink ? <ExternalIcon /> : chevron ? <ChevronIcon /> : null)}
-      </View>
-    </Pressable>
-  );
-}
-
-// ─── Logout button ───────────────────────────────────────────────────
-
-function LogoutButton({ onPress }: { onPress: () => void }) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <Pressable
-      style={[styles.logoutBtn, pressed && styles.logoutBtnPressed]}
-      onPress={onPress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-    >
-      <LogoutIcon />
-      <Text style={styles.logoutText}>Se déconnecter</Text>
-    </Pressable>
   );
 }
 
@@ -364,6 +267,7 @@ export default function ProfileScreen() {
   }
 
   function handleLogout() {
+    haptics.warning();
     Alert.alert('Se déconnecter', 'Voulez-vous vraiment vous déconnecter ?', [
       { text: 'Annuler', style: 'cancel' },
       {
@@ -379,7 +283,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.root} edges={['top']}>
       {/* Header bar */}
       <View style={styles.topBar}>
         <View style={styles.topBarLeft}>
@@ -390,32 +294,36 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.streakBadge}>
           <FlameIcon size={16} />
-          <Text style={styles.streakBadgeText}>{streak} Jours</Text>
+          <Text style={styles.streakBadgeText} maxFontSizeMultiplier={1.3}>
+            {streak} Jours
+          </Text>
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <Screen scroll contentStyle={styles.content}>
         {/* Profile header + level */}
         <View style={styles.profileHeader}>
           <View style={styles.profileHeaderLeft}>
             <Text style={styles.profileName}>{displayName}</Text>
-            <Text style={styles.profileMembership}>{membership}</Text>
+            <Text style={styles.profileMembership} maxFontSizeMultiplier={1.3}>
+              {membership}
+            </Text>
           </View>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelBadgeLabel}>Niveau</Text>
+          <GlassCard padded={false} style={styles.levelBadge}>
+            <Text style={styles.levelBadgeLabel} maxFontSizeMultiplier={1.3}>
+              Niveau
+            </Text>
             <Text style={styles.levelBadgeValue}>{level}</Text>
-          </View>
+          </GlassCard>
         </View>
 
         {/* XP progress */}
         <View style={styles.xpBlock}>
           <View style={styles.xpLabelRow}>
-            <Text style={styles.xpLabel}>Prochain niveau : {nextLevelName}</Text>
-            <Text style={styles.xpLabel}>
+            <Text style={styles.xpLabel} maxFontSizeMultiplier={1.3}>
+              Prochain niveau : {nextLevelName}
+            </Text>
+            <Text style={styles.xpLabel} maxFontSizeMultiplier={1.3}>
               {xpInLevel} / {XP_PER_LEVEL} XP
             </Text>
           </View>
@@ -427,78 +335,86 @@ export default function ProfileScreen() {
         {/* Bento grid */}
         <View style={styles.bento}>
           {/* Goals */}
-          <View style={styles.bentoCard}>
+          <GlassCard style={styles.bentoCard}>
             <View style={styles.bentoCardTop}>
               <TargetIcon />
-              <Text style={styles.bentoCardTopLabel}>Objectifs</Text>
+              <Text style={styles.bentoCardTopLabel} maxFontSizeMultiplier={1.3}>
+                Objectifs
+              </Text>
             </View>
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <Text style={styles.bentoCardTitle}>
+            <View style={styles.bentoBody}>
+              <Text style={styles.bentoCardTitle} maxFontSizeMultiplier={1.3}>
                 {primaryGoal ? (GOAL_LABELS[primaryGoal] ?? 'Personnalisé') : 'Non défini'}
               </Text>
               {targetWeightKg && (
                 <View style={styles.bentoValueRow}>
                   <Text style={styles.bentoValueLarge}>{targetWeightKg}</Text>
-                  <Text style={styles.bentoValueUnit}>kg</Text>
+                  <Text style={styles.bentoValueUnit} maxFontSizeMultiplier={1.3}>
+                    kg
+                  </Text>
                 </View>
               )}
             </View>
-            <Pressable style={styles.bentoBtn} onPress={() => router.push('/modal/edit-profile')}>
-              <Text style={styles.bentoBtnText}>Modifier</Text>
-            </Pressable>
-          </View>
-
-          {/* Health integration */}
-          <View style={[styles.bentoCard, styles.bentoDark]}>
-            <View style={styles.bentoCardTop}>
-              <HeartIcon />
-              <View style={styles.healthStatusDot} />
-            </View>
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <Text style={styles.bentoCardTitle}>Santé Apple</Text>
-              <Text style={styles.bentoCardSubtitle}>Données biométriques synchronisées.</Text>
-            </View>
-            <Pressable
-              style={styles.bentoBtnCyan}
-              onPress={() =>
-                Alert.alert(
-                  'Santé Apple',
-                  "L'intégration HealthKit sera disponible dans la prochaine mise à jour. Vos données biométriques se synchroniseront automatiquement.",
-                  [{ text: 'OK' }]
-                )
-              }
+            <PressableScale
+              haptic="light"
+              style={styles.bentoBtn}
+              onPress={() => router.push('/modal/edit-profile')}
+              accessibilityLabel="Modifier l'objectif"
             >
-              <Text style={styles.bentoBtnCyanText}>Gérer</Text>
-            </Pressable>
-          </View>
+              <Text style={styles.bentoBtnText} maxFontSizeMultiplier={1.3}>
+                Modifier
+              </Text>
+            </PressableScale>
+          </GlassCard>
+
+          {/* Health integration — not available yet */}
+          <GlassCard style={[styles.bentoCard, styles.bentoDisabled]}>
+            <View
+              style={styles.bentoInner}
+              accessible
+              accessibilityLabel="Santé Apple, bientôt disponible"
+              accessibilityState={{ disabled: true }}
+            >
+              <View style={styles.bentoCardTop}>
+                <HeartIcon />
+              </View>
+              <View style={styles.bentoBody}>
+                <Text style={styles.bentoCardTitle} maxFontSizeMultiplier={1.3}>
+                  Santé Apple
+                </Text>
+                <Text style={styles.bentoCardSubtitle} maxFontSizeMultiplier={1.3}>
+                  Bientôt disponible
+                </Text>
+              </View>
+            </View>
+          </GlassCard>
         </View>
 
         {/* Settings section */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: C.secondaryContainer }]} />
-            <Text style={styles.sectionTitle}>Paramètres</Text>
-          </View>
-          <View style={styles.settingsCard}>
-            <SettingsRow
-              icon={<BellIcon color="#fbbf24" />}
-              iconBg="rgba(251,191,36,0.14)"
+          <SectionTitle title="Paramètres" />
+          <GlassCard padded={false} style={styles.listCard}>
+            <ListRow
+              icon={<BellIcon color={ICON_ACCENTS.amber} />}
+              iconBg={`${ICON_ACCENTS.amber}24`}
               label="Notifications"
               sublabel="Phases métaboliques et fin de jeûne"
               rightElement={
                 <Switch
                   value={notificationsEnabled}
                   onValueChange={(v) => void handleToggleNotifications(v)}
-                  trackColor={{ false: C.surface, true: `${C.secondaryContainer}80` }}
-                  thumbColor={notificationsEnabled ? C.secondary : C.outline}
+                  trackColor={{
+                    false: Colors.primaryContainer,
+                    true: `${Colors.secondaryContainer}80`,
+                  }}
+                  thumbColor={notificationsEnabled ? Colors.secondary : Colors.outline}
                 />
               }
               onPress={() => void handleToggleNotifications(!notificationsEnabled)}
-              chevron={false}
             />
-            <SettingsRow
-              icon={<LockIcon color="#a78bfa" />}
-              iconBg="rgba(167,139,250,0.14)"
+            <ListRow
+              icon={<LockIcon color={ICON_ACCENTS.violet} />}
+              iconBg={`${ICON_ACCENTS.violet}24`}
               label="Confidentialité"
               onPress={() =>
                 Alert.alert(
@@ -508,50 +424,58 @@ export default function ProfileScreen() {
                 )
               }
             />
-            <SettingsRow
-              icon={<GlobeIcon color="#34d399" />}
-              iconBg="rgba(52,211,153,0.14)"
+            <ListRow
+              icon={<GlobeIcon color={ICON_ACCENTS.emerald} />}
+              iconBg={`${ICON_ACCENTS.emerald}24`}
               label="Langue"
               sublabel={language === 'fr' ? 'Français' : 'English'}
               onPress={() => router.push('/modal/language')}
               isLast
             />
-          </View>
+          </GlassCard>
         </View>
 
         {/* Support section */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionAccent, { backgroundColor: C.tertiary }]} />
-            <Text style={styles.sectionTitle}>Support</Text>
-          </View>
-          <View style={styles.settingsCard}>
-            <SettingsRow
-              icon={<HelpIcon color="#60a5fa" />}
-              iconBg="rgba(96,165,250,0.14)"
+          <SectionTitle title="Support" accent={Colors.tertiary} />
+          <GlassCard padded={false} style={styles.listCard}>
+            <ListRow
+              icon={<HelpIcon color={ICON_ACCENTS.blue} />}
+              iconBg={`${ICON_ACCENTS.blue}24`}
               label="Centre d'aide"
-              externalLink
-              chevron={false}
+              rightElement={<ExternalIcon />}
               onPress={() =>
                 Linking.openURL('mailto:aide@fastlife.app?subject=Centre%20d%27aide%20FastLife')
               }
             />
-            <SettingsRow
-              icon={<ChatIcon color={C.cyan} />}
-              iconBg="rgba(61,180,242,0.14)"
+            <ListRow
+              icon={<ChatIcon color={Colors.cyan} />}
+              iconBg={`${Colors.cyan}24`}
               label="Contacter l'expert"
               onPress={() =>
                 Linking.openURL('mailto:experts@fastlife.app?subject=Consultation%20FastLife')
               }
               isLast
             />
-          </View>
+          </GlassCard>
         </View>
 
         {/* Logout */}
-        <LogoutButton onPress={handleLogout} />
-        <Text style={styles.version}>FASTLIFE v{Constants.expoConfig?.version ?? '1.0.0'}</Text>
-      </ScrollView>
+        <GlassCard padded={false} style={styles.listCard}>
+          <ListRow
+            icon={<LogoutIcon />}
+            iconBg={`${Colors.error}14`}
+            label="Se déconnecter"
+            destructive
+            chevron={false}
+            onPress={handleLogout}
+            isLast
+          />
+        </GlassCard>
+        <Text style={styles.version} maxFontSizeMultiplier={1.3}>
+          FASTLIFE v{Constants.expoConfig?.version ?? '1.0.0'}
+        </Text>
+      </Screen>
     </SafeAreaView>
   );
 }
@@ -559,87 +483,88 @@ export default function ProfileScreen() {
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bg },
+  root: { flex: 1, backgroundColor: Colors.bg },
 
   // Top bar
   topBar: {
-    height: 56,
+    height: Header.height,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(13,37,71,0.85)',
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Header.bg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: Header.borderColor,
   },
   topBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: C.primaryContainer,
+    backgroundColor: Colors.primaryContainer,
     borderWidth: 2,
-    borderColor: `${C.cyan}50`,
+    borderColor: `${Colors.cyan}50`,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarInitial: { fontSize: 15, fontWeight: '700', color: C.secondary },
-  topBarBrand: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3, color: C.white },
+  avatarInitial: { fontSize: 15, fontWeight: '700', color: Colors.secondary },
+  topBarBrand: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3, color: Colors.white },
   streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: `${Colors.white}12`,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 99,
+    borderColor: `${Colors.white}1F`,
+    borderRadius: Radius.full,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  streakBadgeText: { fontSize: 13, fontWeight: '600', color: C.white },
+  streakBadgeText: { fontSize: 13, fontWeight: '600', color: Colors.white },
 
-  scroll: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 20, gap: 20, paddingBottom: 32 },
+  content: { paddingTop: Spacing.lg, gap: Spacing.lg },
 
   // Profile header
   profileHeader: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   profileHeaderLeft: { gap: 4 },
-  profileName: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5, color: C.onSurface },
+  profileName: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5, color: Colors.onSurface },
   profileMembership: {
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.5,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
   },
   levelBadge: {
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     alignItems: 'center',
   },
   levelBadgeLabel: {
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 2,
-    color: C.cyan,
+    color: Colors.cyan,
     textTransform: 'uppercase',
   },
-  levelBadgeValue: { fontSize: 32, fontWeight: '700', color: C.white, lineHeight: 36 },
+  levelBadgeValue: { fontSize: 32, fontWeight: '700', color: Colors.white, lineHeight: 36 },
 
   // XP
-  xpBlock: { gap: 8 },
+  xpBlock: { gap: Spacing.sm },
   xpLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  xpLabel: { fontSize: 11, fontWeight: '600', color: C.onSurfaceVariant },
-  xpTrack: { height: 8, backgroundColor: C.surface, borderRadius: 99, overflow: 'hidden' },
+  xpLabel: { fontSize: 11, fontWeight: '600', color: Colors.onSurfaceVariant },
+  xpTrack: {
+    height: 8,
+    backgroundColor: Colors.primaryContainer,
+    borderRadius: Radius.full,
+    overflow: 'hidden',
+  },
   xpFill: {
     height: '100%',
-    borderRadius: 99,
-    backgroundColor: C.secondaryContainer,
-    shadowColor: C.secondary,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.secondaryContainer,
+    shadowColor: Colors.secondary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
@@ -649,138 +574,50 @@ const styles = StyleSheet.create({
   bento: { flexDirection: 'row', gap: 12 },
   bentoCard: {
     flex: 1,
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 24,
-    padding: 16,
     minHeight: 180,
     gap: 10,
   },
-  bentoDark: { backgroundColor: 'rgba(13,37,71,0.5)' },
+  bentoDisabled: { backgroundColor: `${Colors.deepBlue}80`, opacity: 0.55 },
+  bentoInner: { flex: 1, gap: 10 },
   bentoCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   bentoCardTopLabel: {
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
   },
-  bentoCardTitle: { fontSize: 15, fontWeight: '600', color: C.white, marginBottom: 4 },
-  bentoCardSubtitle: { fontSize: 11, color: C.onSurfaceVariant, lineHeight: 16 },
+  bentoBody: { flex: 1, justifyContent: 'center' },
+  bentoCardTitle: { fontSize: 15, fontWeight: '600', color: Colors.white, marginBottom: 4 },
+  bentoCardSubtitle: { fontSize: 11, color: Colors.onSurfaceVariant, lineHeight: 16 },
   bentoValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  bentoValueLarge: { fontSize: 32, fontWeight: '700', color: C.white, lineHeight: 36 },
-  bentoValueUnit: { fontSize: 14, color: C.onSurfaceVariant },
-  healthStatusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#34d399',
-    shadowColor: '#34d399',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-  },
+  bentoValueLarge: { fontSize: 32, fontWeight: '700', color: Colors.white, lineHeight: 36 },
+  bentoValueUnit: { fontSize: 14, color: Colors.onSurfaceVariant },
   bentoBtn: {
-    paddingVertical: 8,
-    borderRadius: 99,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    backgroundColor: `${Colors.white}0F`,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+    borderColor: `${Colors.white}1A`,
     alignItems: 'center',
   },
   bentoBtnText: {
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.8,
-    color: C.onSurfaceVariant,
-    textTransform: 'uppercase',
-  },
-  bentoBtnCyan: {
-    paddingVertical: 8,
-    borderRadius: 99,
-    backgroundColor: `${C.secondaryContainer}30`,
-    borderWidth: 1,
-    borderColor: `${C.secondaryContainer}50`,
-    alignItems: 'center',
-  },
-  bentoBtnCyanText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    color: C.secondary,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
   },
 
   // Sections
   section: { gap: 10 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
-  sectionAccent: { width: 3, height: 16, borderRadius: 2 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: C.onSurface, letterSpacing: -0.2 },
-  settingsCard: {
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  settingsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 13,
-    minHeight: 56,
-  },
-  settingsRowBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  settingsRowPressed: { backgroundColor: 'rgba(255,255,255,0.04)' },
-  settingsRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
-  settingsTextBlock: { flex: 1 },
-  settingsRowRight: { marginLeft: 8, alignItems: 'center', justifyContent: 'center' },
-  settingsIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  settingsLabel: { fontSize: 15, fontWeight: '500', color: C.white },
-  settingsSublabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 1.2,
-    color: C.onSurfaceVariant,
-    textTransform: 'uppercase',
-    marginTop: 2,
-  },
+  listCard: { overflow: 'hidden' },
 
-  // Logout
-  logoutSection: { gap: 24, paddingTop: 4 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,180,171,0.05)',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  logoutBtnPressed: {
-    backgroundColor: 'rgba(255,180,171,0.10)',
-    borderColor: `${C.error}20`,
-  },
-  logoutText: { fontSize: 15, fontWeight: '700', color: C.error },
   version: {
     fontSize: 9,
     fontWeight: '600',
     letterSpacing: 2,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     opacity: 0.4,
     textAlign: 'center',
     textTransform: 'uppercase',

@@ -3,6 +3,8 @@
  * Canonical palette: deep-blue glassmorphism (base #050F1D / surface #0D2547).
  */
 
+import type { FontVariant } from 'react-native';
+
 export const Colors = {
   // Backgrounds
   bg: '#050F1D',
@@ -86,7 +88,7 @@ export const TextStyles = {
     fontFamily: Fonts.display,
     fontSize: 56,
     color: Colors.white,
-    fontVariant: ['tabular-nums'] as const,
+    fontVariant: ['tabular-nums'] as FontVariant[],
     letterSpacing: -1,
   },
   h1: { fontFamily: Fonts.bold, fontSize: Typography.h1, color: Colors.white },

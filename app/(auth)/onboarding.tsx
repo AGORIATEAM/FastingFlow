@@ -1,23 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
 import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ─── Design tokens ────────────────────────────────────────────────
-const C = {
-  surface: '#131316',
-  surfaceContainer: '#1f1f22',
-  surfaceVariant: '#343537',
-  secondary: '#84cfff',
-  tertiary: '#45dfa4',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  primaryContainer: '#0a1f3d',
-  glass: 'rgba(13, 37, 71, 0.55)',
-  glassBorder: 'rgba(255,255,255,0.10)',
-};
+import { PrimaryButton } from '@/components/ui';
+import { Colors, Fonts, Radius, Spacing } from '@/lib/theme';
 
 // ─── Spinning ring (RN Animated, no Reanimated) ───────────────────
 
@@ -45,7 +41,7 @@ function SpinningDashedRing({ size }: { size: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke={`${C.secondary}33`}
+          stroke={`${Colors.secondary}33`}
           strokeWidth={2}
           strokeDasharray="8 8"
         />
@@ -59,15 +55,15 @@ function SpinningDashedRing({ size }: { size: number }) {
 function TimerIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="13" r="8" stroke={C.secondary} strokeWidth="1.5" />
+      <Circle cx="12" cy="13" r="8" stroke={Colors.secondary} strokeWidth="1.5" />
       <Path
         d="M12 9v4l2.5 2.5"
-        stroke={C.secondary}
+        stroke={Colors.secondary}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Path d="M10 3h4M12 3v2" stroke={C.secondary} strokeWidth="1.5" strokeLinecap="round" />
+      <Path d="M10 3h4M12 3v2" stroke={Colors.secondary} strokeWidth="1.5" strokeLinecap="round" />
     </Svg>
   );
 }
@@ -77,12 +73,12 @@ function BiotechIcon() {
     <Svg width={36} height={36} viewBox="0 0 24 24" fill="none">
       <Path
         d="M7 2v4M7 6l2 2M7 6l-2 2M9 8l1 1M8 9l-1 3 3 3 3-1M10 15l2 5M12 20h3"
-        stroke={C.tertiary}
+        stroke={Colors.tertiary}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Circle cx="16" cy="10" r="4" stroke={C.tertiary} strokeWidth="1.5" />
+      <Circle cx="16" cy="10" r="4" stroke={Colors.tertiary} strokeWidth="1.5" />
     </Svg>
   );
 }
@@ -90,20 +86,28 @@ function BiotechIcon() {
 function PeopleIcon() {
   return (
     <Svg width={48} height={48} viewBox="0 0 24 24" fill="none">
-      <Circle cx="9" cy="7" r="3" stroke={C.secondary} strokeWidth="1.5" />
-      <Circle cx="16" cy="8" r="2.5" stroke={C.tertiary} strokeWidth="1.5" />
+      <Circle cx="9" cy="7" r="3" stroke={Colors.secondary} strokeWidth="1.5" />
+      <Circle cx="16" cy="8" r="2.5" stroke={Colors.tertiary} strokeWidth="1.5" />
       <Path
         d="M3 19c0-3.314 2.686-6 6-6s6 2.686 6 6"
-        stroke={C.secondary}
+        stroke={Colors.secondary}
         strokeWidth="1.5"
         strokeLinecap="round"
       />
       <Path
         d="M16 13c2.21 0 4 1.79 4 4"
-        stroke={C.tertiary}
+        stroke={Colors.tertiary}
         strokeWidth="1.5"
         strokeLinecap="round"
       />
+    </Svg>
+  );
+}
+
+function BoltIcon() {
+  return (
+    <Svg width={12} height={12} viewBox="0 0 24 24" fill="none">
+      <Path d="M13 2L4.5 13.5H11L10.5 22L20 10.5H13.5L13 2z" fill={Colors.tertiary} />
     </Svg>
   );
 }
@@ -120,11 +124,15 @@ function Slide1Illustration() {
       <View style={styles.glassCircle}>
         <TimerIcon />
         <Text style={styles.timerDisplay}>16:00</Text>
-        <Text style={styles.timerLabel}>Heures de jeûne</Text>
+        <Text style={styles.timerLabel} maxFontSizeMultiplier={1.3}>
+          Heures de jeûne
+        </Text>
       </View>
       <View style={styles.floatingBadge}>
-        <Text style={styles.badgeIcon}>⚡</Text>
-        <Text style={styles.badgeText}>Cétose</Text>
+        <BoltIcon />
+        <Text style={styles.badgeText} maxFontSizeMultiplier={1.3}>
+          Cétose
+        </Text>
       </View>
     </View>
   );
@@ -134,11 +142,15 @@ function Slide2Illustration() {
   return (
     <View style={styles.illustrationContainer}>
       <SpinningDashedRing size={ILLUSTRATION_SIZE - 16} />
-      <View style={[styles.glassCircle, { gap: 12 }]}>
+      <View style={[styles.glassCircle, styles.gapMd]}>
         <BiotechIcon />
         <View style={styles.glassCard}>
-          <Text style={styles.cardTitle}>Autophagie</Text>
-          <Text style={styles.cardBody}>Régénération cellulaire active</Text>
+          <Text style={styles.cardTitle} maxFontSizeMultiplier={1.3}>
+            Autophagie
+          </Text>
+          <Text style={styles.cardBody} maxFontSizeMultiplier={1.3}>
+            Régénération cellulaire active
+          </Text>
         </View>
       </View>
     </View>
@@ -146,13 +158,13 @@ function Slide2Illustration() {
 }
 
 function Slide3Illustration() {
-  const avatarColors = [C.primaryContainer, C.surfaceVariant, C.surfaceContainer];
+  const avatarColors = [Colors.primaryContainer, Colors.deepBlue, Colors.ring];
   return (
     <View style={styles.illustrationContainer}>
       <SpinningDashedRing size={ILLUSTRATION_SIZE - 16} />
-      <View style={[styles.glassCircle, { gap: 16 }]}>
+      <View style={[styles.glassCircle, styles.gapLg]}>
         <PeopleIcon />
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={styles.avatarRow}>
           {avatarColors.map((bg, i) => (
             <View
               key={i}
@@ -162,8 +174,10 @@ function Slide3Illustration() {
               ]}
             />
           ))}
-          <View style={[styles.avatar, styles.avatarCount, { marginLeft: -12 }]}>
-            <Text style={styles.avatarCountText}>+12k</Text>
+          <View style={[styles.avatar, styles.avatarCount, styles.avatarOverlap]}>
+            <Text style={styles.avatarCountText} maxFontSizeMultiplier={1.3}>
+              +12k
+            </Text>
           </View>
         </View>
       </View>
@@ -210,7 +224,7 @@ function Dot({ active }: { active: boolean }) {
 
   return (
     <Animated.View
-      style={[styles.dot, { width, backgroundColor: active ? C.secondary : C.surfaceVariant }]}
+      style={[styles.dot, { width, backgroundColor: active ? Colors.secondary : Colors.ring }]}
     />
   );
 }
@@ -219,6 +233,7 @@ function Dot({ active }: { active: boolean }) {
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { width: screenWidth } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList<(typeof SLIDES)[number]>>(null);
 
@@ -232,6 +247,11 @@ export default function OnboardingScreen() {
     }
   }
 
+  function handleMomentumEnd(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+    setCurrentIndex(Math.min(Math.max(index, 0), SLIDES.length - 1));
+  }
+
   return (
     <View style={styles.screen}>
       <View style={[styles.blob, styles.blobBottom]} />
@@ -240,7 +260,9 @@ export default function OnboardingScreen() {
       {/* Skip */}
       <View style={styles.header}>
         <Pressable onPress={() => router.replace('/(tabs)')} hitSlop={16}>
-          <Text style={styles.skipText}>Passer</Text>
+          <Text style={styles.skipText} maxFontSizeMultiplier={1.3}>
+            Passer
+          </Text>
         </Pressable>
       </View>
 
@@ -251,15 +273,25 @@ export default function OnboardingScreen() {
         keyExtractor={(s) => s.id}
         horizontal
         pagingEnabled
-        scrollEnabled={false}
+        scrollEnabled={true}
         showsHorizontalScrollIndicator={false}
-        style={{ flex: 1 }}
+        onMomentumScrollEnd={handleMomentumEnd}
+        getItemLayout={(_, index) => ({
+          length: screenWidth,
+          offset: screenWidth * index,
+          index,
+        })}
+        style={styles.flex}
         renderItem={({ item }) => (
-          <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
+          <View style={[styles.slide, { width: screenWidth }]}>
             <item.Illustration />
             <View style={styles.textBlock}>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.body}>{item.body}</Text>
+              <Text style={styles.title} maxFontSizeMultiplier={1.3}>
+                {item.title}
+              </Text>
+              <Text style={styles.body} maxFontSizeMultiplier={1.3}>
+                {item.body}
+              </Text>
             </View>
           </View>
         )}
@@ -273,16 +305,13 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <Pressable
-          style={({ pressed }) => [styles.ctaButton, pressed && { transform: [{ scale: 0.97 }] }]}
+        <PrimaryButton
+          label={currentIndex === SLIDES.length - 1 ? 'Commencer →' : 'Suivant →'}
           onPress={goNext}
-        >
-          <Text style={styles.ctaText}>
-            {currentIndex === SLIDES.length - 1 ? 'Commencer' : 'Suivant'} →
-          </Text>
-        </Pressable>
+          style={styles.ctaButton}
+        />
 
-        <Text style={styles.stepLabel}>
+        <Text style={styles.stepLabel} maxFontSizeMultiplier={1.3}>
           Étape {currentIndex + 1} sur {SLIDES.length}
         </Text>
       </View>
@@ -293,34 +322,44 @@ export default function OnboardingScreen() {
 // ─── Styles ───────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.surface, overflow: 'hidden' },
-  blob: { position: 'absolute', borderRadius: 999 },
+  screen: { flex: 1, backgroundColor: Colors.bg, overflow: 'hidden' },
+  flex: { flex: 1 },
+  gapMd: { gap: 12 },
+  gapLg: { gap: 16 },
+
+  blob: { position: 'absolute', borderRadius: Radius.full },
   blobBottom: {
     bottom: -96,
     left: -96,
     width: 256,
     height: 256,
-    backgroundColor: `${C.secondary}1A`,
+    backgroundColor: `${Colors.secondary}1A`,
   },
-  blobTop: { top: -96, right: -96, width: 320, height: 320, backgroundColor: `${C.tertiary}0D` },
+  blobTop: {
+    top: -96,
+    right: -96,
+    width: 320,
+    height: 320,
+    backgroundColor: `${Colors.tertiary}0D`,
+  },
 
-  header: { paddingTop: 56, paddingHorizontal: 20, alignItems: 'flex-end' },
+  header: { paddingTop: 56, paddingHorizontal: Spacing.lg, alignItems: 'flex-end' },
   skipText: {
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
+    fontFamily: Fonts.semibold,
     fontSize: 12,
-    fontWeight: '600',
     letterSpacing: 2,
     textTransform: 'uppercase',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
 
   slide: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    gap: 32,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.xxl,
   },
 
   illustrationContainer: {
@@ -331,34 +370,39 @@ const styles = StyleSheet.create({
   },
   outerRing: {
     position: 'absolute',
-    borderRadius: 999,
+    borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: `${C.secondary}0D`,
-    backgroundColor: `${C.secondary}0D`,
+    borderColor: `${Colors.secondary}0D`,
+    backgroundColor: `${Colors.secondary}0D`,
   },
   glassCircle: {
     width: 224,
     height: 224,
-    borderRadius: 999,
-    backgroundColor: C.glass,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.glass,
     borderWidth: 1,
-    borderColor: C.glassBorder,
+    borderColor: Colors.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    shadowColor: C.secondary,
+    gap: Spacing.sm,
+    shadowColor: Colors.secondary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.12,
     shadowRadius: 30,
     elevation: 10,
   },
 
-  timerDisplay: { fontSize: 32, fontWeight: '700', letterSpacing: -1.5, color: C.secondary },
+  timerDisplay: {
+    fontFamily: Fonts.bold,
+    fontSize: 32,
+    letterSpacing: -1.5,
+    color: Colors.secondary,
+  },
   timerLabel: {
+    fontFamily: Fonts.semibold,
     fontSize: 11,
-    fontWeight: '600',
     letterSpacing: 1.5,
-    color: `${C.secondary}99`,
+    color: `${Colors.secondary}99`,
     textTransform: 'uppercase',
   },
 
@@ -368,71 +412,70 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: C.glass,
+    gap: Spacing.xs,
+    backgroundColor: Colors.glass,
     borderWidth: 1,
-    borderColor: C.glassBorder,
+    borderColor: Colors.glassBorder,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: Radius.sm,
   },
-  badgeIcon: { fontSize: 11, color: C.tertiary },
-  badgeText: { fontSize: 10, fontWeight: '700', color: C.onSurface },
+  badgeText: { fontFamily: Fonts.bold, fontSize: 10, color: Colors.onSurface },
 
   glassCard: {
-    backgroundColor: C.glass,
+    backgroundColor: Colors.glass,
     borderWidth: 1,
-    borderColor: C.glassBorder,
+    borderColor: Colors.glassBorder,
     borderRadius: 12,
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 12,
   },
-  cardTitle: { fontSize: 18, fontWeight: '600', color: C.onSurface },
-  cardBody: { fontSize: 13, color: C.onSurfaceVariant, marginTop: 2 },
+  cardTitle: { fontFamily: Fonts.semibold, fontSize: 18, color: Colors.onSurface },
+  cardBody: {
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    color: Colors.onSurfaceVariant,
+    marginTop: 2,
+  },
 
-  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: C.surface },
+  avatarRow: { flexDirection: 'row', alignItems: 'center' },
+  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: Colors.bg },
+  avatarOverlap: { marginLeft: -12 },
   avatarCount: {
-    backgroundColor: C.surfaceContainer,
+    backgroundColor: Colors.deepBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarCountText: { fontSize: 10, fontWeight: '700', color: C.secondary },
+  avatarCountText: { fontFamily: Fonts.bold, fontSize: 10, color: Colors.secondary },
 
-  textBlock: { alignItems: 'center', gap: 12, paddingHorizontal: 8 },
+  textBlock: { alignItems: 'center', gap: 12, paddingHorizontal: Spacing.sm },
   title: {
+    fontFamily: Fonts.bold,
     fontSize: 28,
-    fontWeight: '700',
     letterSpacing: -0.5,
-    color: C.onSurface,
+    color: Colors.onSurface,
     textAlign: 'center',
     lineHeight: 36,
   },
   body: {
+    fontFamily: Fonts.regular,
     fontSize: 16,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textAlign: 'center',
     lineHeight: 24,
     maxWidth: 280,
   },
 
-  footer: { paddingBottom: 48, paddingHorizontal: 20, alignItems: 'center', gap: 16 },
-  dots: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 4 },
-  dot: { height: 6, borderRadius: 99 },
-
-  ctaButton: {
-    width: '100%',
-    backgroundColor: '#009ad7',
-    paddingVertical: 18,
-    borderRadius: 999,
+  footer: {
+    paddingBottom: 48,
+    paddingHorizontal: Spacing.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#009ad7',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 8,
+    gap: Spacing.md,
   },
-  ctaText: { fontSize: 18, fontWeight: '600', color: '#001e2e' },
-  stepLabel: { fontSize: 12, fontWeight: '600', color: `${C.onSurfaceVariant}99` },
+  dots: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'center', marginBottom: 4 },
+  dot: { height: 6, borderRadius: Radius.full },
+
+  ctaButton: { alignSelf: 'stretch' },
+  stepLabel: { fontFamily: Fonts.semibold, fontSize: 12, color: Colors.mutedText },
 });

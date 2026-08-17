@@ -1,30 +1,25 @@
-import { useState } from 'react';
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Svg, { Path, Circle } from 'react-native-svg';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
-import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
+import { AppHeader } from '@/components/AppHeader';
+import { Chip, GlassCard, PressableScale, PrimaryButton } from '@/components/ui';
 import type { Protocol } from '@/lib/schemas';
+import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
+import { Colors, Fonts, Header, Radius, Spacing, Typography } from '@/lib/theme';
 
-const { width: SW } = Dimensions.get('window');
+// Accent colors without theme tokens — named locally.
+/** Intermediate protocol accent (between secondary and tertiary). */
+const ACCENT_BLUE_SOFT = '#6ec6ff';
+/** Bright late-phase accent (36h+). */
+const ACCENT_TERTIARY_BRIGHT = '#68fcbf';
+/** Neutral lavender accent for the free protocol. */
+const ACCENT_LAVENDER = '#b4c7ed';
 
-// ─── Design tokens ──────────────────────────────────────────────────
-const C = {
-  bg: '#050F1D',
-  deepBlue: '#0D2547',
-  glass: 'rgba(13, 37, 71, 0.45)',
-  glassBorder: 'rgba(245, 247, 250, 0.09)',
-  secondary: '#84cfff',
-  secondaryContainer: '#009ad7',
-  tertiary: '#45dfa4',
-  tertiaryBright: '#68fcbf',
-  primary: '#3DB4F2',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  primaryContainer: '#0a1f3d',
-  white: '#ffffff',
-};
+/** Threshold (hours) above which prolonged fasts need medical supervision. */
+const PROLONGED_FAST_H = 36;
 
 // ─── Protocol metadata (enriched) ───────────────────────────────────
 
@@ -49,8 +44,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 8,
     difficulty: 1,
     level: 'Débutant',
-    accent: '#84cfff',
-    highlight: '#84cfff',
+    accent: Colors.secondary,
+    highlight: Colors.secondary,
     description: "Stabilise l'insuline et amorce la lipolyse. Fenêtre d'alimentation de 8h.",
     keyBenefit: 'Autophagie légère · Insuline stable',
   },
@@ -61,8 +56,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 6,
     difficulty: 2,
     level: 'Intermédiaire',
-    accent: '#6ec6ff',
-    highlight: '#6ec6ff',
+    accent: ACCENT_BLUE_SOFT,
+    highlight: ACCENT_BLUE_SOFT,
     description: "Prolonge la cétose. Améliore la clarté mentale et la sensibilité à l'insuline.",
     keyBenefit: 'Cétose débutante · Clarté mentale',
   },
@@ -73,8 +68,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 4,
     difficulty: 3,
     level: 'Avancé',
-    accent: '#45dfa4',
-    highlight: '#45dfa4',
+    accent: Colors.tertiary,
+    highlight: Colors.tertiary,
     description:
       "Stimule l'hormone de croissance. Fenêtre très restreinte pour une régénération profonde.",
     keyBenefit: 'Autophagie active · GH stimulée',
@@ -86,8 +81,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 1,
     difficulty: 4,
     level: 'Expert',
-    accent: '#45dfa4',
-    highlight: '#45dfa4',
+    accent: Colors.tertiary,
+    highlight: Colors.tertiary,
     description: '"One Meal A Day". Repos digestif quasi-total, clarté cognitive maximale.',
     keyBenefit: 'Repos digestif · Cétose profonde',
   },
@@ -98,8 +93,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 0,
     difficulty: 4,
     level: 'Expert',
-    accent: '#68fcbf',
-    highlight: '#68fcbf',
+    accent: ACCENT_TERTIARY_BRIGHT,
+    highlight: ACCENT_TERTIARY_BRIGHT,
     description:
       'Protocole circadien complet. Réinitialisation immunitaire et nettoyage cellulaire intense.',
     keyBenefit: 'Immunité renforcée · Autophagie profonde',
@@ -111,8 +106,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 0,
     difficulty: 5,
     level: 'Expert',
-    accent: '#68fcbf',
-    highlight: '#68fcbf',
+    accent: ACCENT_TERTIARY_BRIGHT,
+    highlight: ACCENT_TERTIARY_BRIGHT,
     description:
       'Autophagie profonde et activation des gènes de longévité (SIRT1, FOXO3). À encadrer.',
     keyBenefit: 'Gènes de longévité · Régénération intense',
@@ -124,8 +119,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 0,
     difficulty: 5,
     level: 'Expert',
-    accent: '#68fcbf',
-    highlight: '#68fcbf',
+    accent: ACCENT_TERTIARY_BRIGHT,
+    highlight: ACCENT_TERTIARY_BRIGHT,
     description:
       "Pic maximal d'hormone de croissance et régénération cellulaire complète. Réservé aux jeûneurs expérimentés.",
     keyBenefit: 'Pic HGH · Régénération complète',
@@ -137,8 +132,8 @@ const PROTOCOLS: ProtocolMeta[] = [
     eatH: 0,
     difficulty: 1,
     level: 'Personnalisé',
-    accent: '#b4c7ed',
-    highlight: '#b4c7ed',
+    accent: ACCENT_LAVENDER,
+    highlight: ACCENT_LAVENDER,
     description: 'Définissez votre durée selon votre rythme biologique et vos contraintes du jour.',
     keyBenefit: 'Flexibilité totale',
   },
@@ -146,27 +141,11 @@ const PROTOCOLS: ProtocolMeta[] = [
 
 // ─── Icons ───────────────────────────────────────────────────────────
 
-function BackIcon() {
-  return (
-    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M19 12H5M12 19l-7-7 7-7"
-        stroke={C.onSurface}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
 function CheckIcon({ color }: { color: string }) {
   return (
     <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-      <Circle
-        cx="12"
-        cy="12"
-        r="10"
+      <Path
+        d="M12 2a10 10 0 100 20 10 10 0 000-20z"
         fill={color}
         fillOpacity={0.2}
         stroke={color}
@@ -183,34 +162,24 @@ function CheckIcon({ color }: { color: string }) {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M5 12h14M13 6l6 6-6 6"
-        stroke="#001e2e"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-// ─── Fasting window visualizer ───────────────────────────────────────
+// ─── Fasting window visualizer (24 segments) ─────────────────────────
 
 const SEGMENTS = 24;
 
 function FastingWindow({ fastH, eatH, accent }: { fastH: number; eatH: number; accent: string }) {
+  const { width } = useWindowDimensions();
+
   if (fastH === 0) {
     return (
       <View style={styles.windowFree}>
-        <Text style={[styles.windowFreeText, { color: accent }]}>Durée personnalisée</Text>
+        <Text style={[styles.windowFreeText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+          Durée personnalisée
+        </Text>
       </View>
     );
   }
 
-  const segW = (SW - 40 - 36 - 16) / SEGMENTS; // account for padding + label + gap
+  const segW = (width - 40 - 36 - 16) / SEGMENTS; // account for padding + label + gap
   return (
     <View style={styles.windowRow}>
       <View style={styles.windowBars}>
@@ -233,8 +202,14 @@ function FastingWindow({ fastH, eatH, accent }: { fastH: number; eatH: number; a
         })}
       </View>
       <View style={styles.windowLabels}>
-        <Text style={[styles.windowLabel, { color: accent }]}>{fastH}h</Text>
-        {eatH > 0 && <Text style={styles.windowLabelEat}>{eatH}h</Text>}
+        <Text style={[styles.windowLabel, { color: accent }]} maxFontSizeMultiplier={1.3}>
+          {fastH}h
+        </Text>
+        {eatH > 0 && (
+          <Text style={styles.windowLabelEat} maxFontSizeMultiplier={1.3}>
+            {eatH}h
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -266,148 +241,121 @@ function ProtocolCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const [pressed, setPressed] = useState(false);
   const { accent } = meta;
 
   return (
-    <Pressable
-      style={[
-        styles.card,
-        selected && [styles.cardActive, { borderColor: accent, shadowColor: accent }],
-        pressed && { transform: [{ scale: 0.985 }] },
-      ]}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
+    <PressableScale
       onPress={onSelect}
+      haptic="selection"
+      accessibilityLabel={`Protocole ${meta.title}, ${meta.level}`}
+      accessibilityState={{ selected }}
     >
-      {/* Accent glow on selection */}
-      {selected && <View style={[styles.cardGlow, { backgroundColor: `${accent}08` }]} />}
+      <GlassCard
+        style={[
+          styles.card,
+          selected && [styles.cardActive, { borderColor: accent, shadowColor: accent }],
+        ]}
+      >
+        {/* Accent glow on selection */}
+        {selected && <View style={[styles.cardGlow, { backgroundColor: `${accent}08` }]} />}
 
-      {/* Header row */}
-      <View style={styles.cardHeader}>
-        <View style={styles.cardHeaderLeft}>
-          {/* Protocol label */}
-          <View
-            style={[
-              styles.levelPill,
-              { backgroundColor: `${accent}18`, borderColor: `${accent}35` },
-            ]}
-          >
-            <Text style={[styles.levelText, { color: accent }]}>{meta.level}</Text>
+        {/* Header row */}
+        <View style={styles.cardHeader}>
+          <View style={styles.cardHeaderLeft}>
+            <View
+              style={[
+                styles.levelPill,
+                { backgroundColor: `${accent}18`, borderColor: `${accent}35` },
+              ]}
+            >
+              <Text style={[styles.levelText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+                {meta.level}
+              </Text>
+            </View>
+            <Text style={styles.cardTitle} maxFontSizeMultiplier={1.3}>
+              {meta.title}
+            </Text>
           </View>
-          <Text style={styles.cardTitle}>{meta.title}</Text>
+          <View style={styles.cardHeaderRight}>
+            <DifficultyDots level={meta.difficulty} accent={accent} />
+            {selected && <CheckIcon color={accent} />}
+          </View>
         </View>
-        <View style={styles.cardHeaderRight}>
-          <DifficultyDots level={meta.difficulty} accent={accent} />
-          {selected && <CheckIcon color={accent} />}
+
+        {/* Fasting window bar */}
+        <FastingWindow fastH={meta.fastH} eatH={meta.eatH} accent={accent} />
+
+        {/* Description */}
+        <Text style={styles.cardDesc} maxFontSizeMultiplier={1.3}>
+          {meta.description}
+        </Text>
+
+        {/* Key benefit pill */}
+        <View style={[styles.benefitPill, { borderColor: `${accent}25` }]}>
+          <View style={[styles.benefitDot, { backgroundColor: accent }]} />
+          <Text style={[styles.benefitText, { color: accent }]} maxFontSizeMultiplier={1.3}>
+            {meta.keyBenefit}
+          </Text>
         </View>
-      </View>
-
-      {/* Fasting window bar */}
-      <FastingWindow fastH={meta.fastH} eatH={meta.eatH} accent={accent} />
-
-      {/* Description */}
-      <Text style={styles.cardDesc}>{meta.description}</Text>
-
-      {/* Key benefit pill */}
-      <View style={[styles.benefitPill, { borderColor: `${accent}25` }]}>
-        <View style={[styles.benefitDot, { backgroundColor: accent }]} />
-        <Text style={[styles.benefitText, { color: accent }]}>{meta.keyBenefit}</Text>
-      </View>
-    </Pressable>
+      </GlassCard>
+    </PressableScale>
   );
 }
-
-// ─── Confirm button with proper pressed state ────────────────────────
-
-function ConfirmButton({ onPress, label }: { onPress: () => void; label: string }) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <Pressable
-      style={[styles.confirmBtn, pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 }]}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      onPress={onPress}
-    >
-      <Text style={styles.confirmText}>{label}</Text>
-      <ArrowIcon />
-    </Pressable>
-  );
-}
-
-// ─── Back button with pressed state ─────────────────────────────────
-
-function BackButton({ onPress }: { onPress: () => void }) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <Pressable
-      style={[styles.backBtn, pressed && { opacity: 0.6 }]}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      onPress={onPress}
-      hitSlop={16}
-    >
-      <BackIcon />
-    </Pressable>
-  );
-}
-
-// ─── Screen ──────────────────────────────────────────────────────────
 
 // ─── Free duration picker ────────────────────────────────────────────
 
 const FREE_PRESETS = [8, 12, 16, 20, 24, 36, 48, 60, 72, 96];
 
 function FreeDurationPicker({ value, onChange }: { value: number; onChange: (h: number) => void }) {
-  const [minusPressed, setMinusPressed] = useState(false);
-  const [plusPressed, setPlusPressed] = useState(false);
-
   return (
     <View style={styles.freePicker}>
-      <Text style={styles.freePickerTitle}>Durée personnalisée</Text>
+      <Text style={styles.freePickerTitle} maxFontSizeMultiplier={1.3}>
+        Durée personnalisée
+      </Text>
 
       {/* Stepper */}
       <View style={styles.freeStepperRow}>
-        <Pressable
-          style={[styles.freeStepBtn, minusPressed && { opacity: 0.6 }]}
-          onPressIn={() => setMinusPressed(true)}
-          onPressOut={() => setMinusPressed(false)}
+        <PressableScale
           onPress={() => onChange(Math.max(1, value - 1))}
+          haptic="selection"
+          accessibilityLabel="Réduire la durée"
+          style={styles.freeStepBtn}
         >
           <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-            <Path d="M5 12h14" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" />
+            <Path d="M5 12h14" stroke={Colors.secondary} strokeWidth="2" strokeLinecap="round" />
           </Svg>
-        </Pressable>
+        </PressableScale>
 
         <View style={styles.freeStepValue}>
-          <Text style={styles.freeStepNum}>{value}</Text>
-          <Text style={styles.freeStepUnit}>heures</Text>
+          <Text style={styles.freeStepNum} maxFontSizeMultiplier={1.3}>
+            {value}
+          </Text>
+          <Text style={styles.freeStepUnit} maxFontSizeMultiplier={1.3}>
+            heures
+          </Text>
         </View>
 
-        <Pressable
-          style={[styles.freeStepBtn, plusPressed && { opacity: 0.6 }]}
-          onPressIn={() => setPlusPressed(true)}
-          onPressOut={() => setPlusPressed(false)}
+        <PressableScale
           onPress={() => onChange(Math.min(96, value + 1))}
+          haptic="selection"
+          accessibilityLabel="Augmenter la durée"
+          style={styles.freeStepBtn}
         >
           <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-            <Path d="M12 5v14M5 12h14" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" />
+            <Path
+              d="M12 5v14M5 12h14"
+              stroke={Colors.secondary}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </Svg>
-        </Pressable>
+        </PressableScale>
       </View>
 
       {/* Quick presets */}
       <View style={styles.freePresets}>
         {FREE_PRESETS.map((h) => (
-          <Pressable
-            key={h}
-            style={[styles.freePresetChip, value === h && styles.freePresetChipActive]}
-            onPress={() => onChange(h)}
-          >
-            <Text style={[styles.freePresetText, value === h && styles.freePresetTextActive]}>
-              {h}h
-            </Text>
-          </Pressable>
+          <Chip key={h} label={`${h}h`} selected={value === h} onPress={() => onChange(h)} />
         ))}
       </View>
     </View>
@@ -426,6 +374,9 @@ export default function ProtocolPickerModal() {
   const [freeDuration, setFreeDuration] = useState(storedFreeDuration);
 
   const selectedMeta = PROTOCOLS.find((p) => p.id === selected);
+  const showHealthWarning =
+    (selectedMeta !== undefined && selectedMeta.fastH >= PROLONGED_FAST_H) ||
+    (selected === 'free' && freeDuration >= PROLONGED_FAST_H);
 
   function confirm() {
     setPreferred(selected);
@@ -436,12 +387,7 @@ export default function ProtocolPickerModal() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeTop} edges={['top']}>
-        {/* App bar */}
-        <View style={styles.appBar}>
-          <BackButton onPress={() => router.back()} />
-          <Text style={styles.appBarTitle}>Protocole de jeûne</Text>
-          <View style={{ width: 36 }} />
-        </View>
+        <AppHeader title="Protocole de jeûne" onBack={() => router.back()} />
       </SafeAreaView>
 
       {/* Scrollable content */}
@@ -456,8 +402,10 @@ export default function ProtocolPickerModal() {
 
         {/* Hero */}
         <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Choisissez{'\n'}votre protocole</Text>
-          <Text style={styles.heroSubtitle}>
+          <Text style={styles.heroTitle} maxFontSizeMultiplier={1.3}>
+            Choisissez{'\n'}votre protocole
+          </Text>
+          <Text style={styles.heroSubtitle} maxFontSizeMultiplier={1.3}>
             La durée de jeûne adaptée à votre niveau et vos objectifs de santé.
           </Text>
         </View>
@@ -465,12 +413,16 @@ export default function ProtocolPickerModal() {
         {/* Legend */}
         <View style={styles.legend}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendSeg, { backgroundColor: C.secondary }]} />
-            <Text style={styles.legendText}>Jeûne</Text>
+            <View style={[styles.legendSeg, { backgroundColor: Colors.secondary }]} />
+            <Text style={styles.legendText} maxFontSizeMultiplier={1.3}>
+              Jeûne
+            </Text>
           </View>
           <View style={styles.legendItem}>
             <View style={[styles.legendSeg, { backgroundColor: 'rgba(255,255,255,0.12)' }]} />
-            <Text style={styles.legendText}>Alimentation</Text>
+            <Text style={styles.legendText} maxFontSizeMultiplier={1.3}>
+              Alimentation
+            </Text>
           </View>
           <View style={styles.legendItem}>
             <View style={styles.dotsRow}>
@@ -479,12 +431,14 @@ export default function ProtocolPickerModal() {
                   key={d}
                   style={[
                     styles.dot,
-                    { backgroundColor: d <= 2 ? C.secondary : 'rgba(255,255,255,0.12)' },
+                    { backgroundColor: d <= 2 ? Colors.secondary : 'rgba(255,255,255,0.12)' },
                   ]}
                 />
               ))}
             </View>
-            <Text style={styles.legendText}>Difficulté</Text>
+            <Text style={styles.legendText} maxFontSizeMultiplier={1.3}>
+              Difficulté
+            </Text>
           </View>
         </View>
 
@@ -505,20 +459,35 @@ export default function ProtocolPickerModal() {
           ))}
         </View>
 
+        {/* Health warning for prolonged fasts */}
+        {showHealthWarning && (
+          <GlassCard style={styles.warningCard}>
+            <Text accessibilityRole="alert" style={styles.warningText} maxFontSizeMultiplier={1.3}>
+              Les jeûnes prolongés (36 h et plus) doivent être encadrés par un professionnel de
+              santé.
+            </Text>
+          </GlassCard>
+        )}
+
         {/* Bottom spacer for fixed button */}
-        <View style={{ height: 100 }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Fixed confirm button at bottom */}
       <SafeAreaView style={styles.footerArea} edges={['bottom']}>
         <View style={styles.footer}>
           <View style={styles.footerInfo}>
-            <Text style={styles.footerLabel}>Sélectionné</Text>
-            <Text style={[styles.footerProtocol, { color: selectedMeta?.accent ?? C.secondary }]}>
+            <Text style={styles.footerLabel} maxFontSizeMultiplier={1.3}>
+              Sélectionné
+            </Text>
+            <Text
+              style={[styles.footerProtocol, { color: selectedMeta?.accent ?? Colors.secondary }]}
+              maxFontSizeMultiplier={1.3}
+            >
               {selectedMeta?.title ?? selected}
             </Text>
           </View>
-          <ConfirmButton onPress={confirm} label="Confirmer" />
+          <PrimaryButton label="Confirmer" onPress={confirm} style={styles.confirmBtn} />
         </View>
       </SafeAreaView>
     </View>
@@ -528,24 +497,11 @@ export default function ProtocolPickerModal() {
 // ─── Styles ──────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bg },
-  safeTop: { backgroundColor: 'rgba(13,37,71,0.92)' },
-
-  appBar: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(13,37,71,0.92)',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
-  },
-  backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  appBarTitle: { fontSize: 15, fontWeight: '600', color: C.onSurface, letterSpacing: 0.1 },
+  root: { flex: 1, backgroundColor: Colors.bg },
+  safeTop: { backgroundColor: Header.bg },
 
   scroll: { flex: 1 },
-  content: { paddingHorizontal: 20, paddingTop: 24 },
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl },
 
   // Blobs
   blobTL: {
@@ -554,8 +510,8 @@ const styles = StyleSheet.create({
     left: -60,
     width: 220,
     height: 220,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,154,215,0.06)',
+    borderRadius: Radius.full,
+    backgroundColor: `${Colors.secondaryContainer}0F`,
   },
   blobBR: {
     position: 'absolute',
@@ -563,42 +519,48 @@ const styles = StyleSheet.create({
     right: -60,
     width: 240,
     height: 240,
-    borderRadius: 999,
-    backgroundColor: 'rgba(69,223,164,0.04)',
+    borderRadius: Radius.full,
+    backgroundColor: `${Colors.tertiary}0A`,
   },
 
   // Hero
-  hero: { marginBottom: 20, gap: 8 },
+  hero: { marginBottom: Spacing.lg, gap: Spacing.sm },
   heroTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 30,
-    fontWeight: '700',
     letterSpacing: -0.8,
-    color: C.white,
+    color: Colors.white,
     lineHeight: 36,
   },
-  heroSubtitle: { fontSize: 14, color: C.onSurfaceVariant, lineHeight: 21 },
+  heroSubtitle: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: Colors.onSurfaceVariant,
+    lineHeight: 21,
+  },
 
   // Legend
   legend: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
-    paddingHorizontal: 4,
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xs,
   },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendSeg: { width: 20, height: 6, borderRadius: 2 },
-  legendText: { fontSize: 11, color: C.onSurfaceVariant },
+  legendText: {
+    fontFamily: Fonts.regular,
+    fontSize: Typography.label,
+    color: Colors.onSurfaceVariant,
+  },
 
   // Protocol list
   list: { gap: 10 },
 
   // Card
   card: {
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
     borderRadius: 18,
-    padding: 16,
+    padding: Spacing.md,
     gap: 12,
     overflow: 'hidden',
   },
@@ -621,17 +583,17 @@ const styles = StyleSheet.create({
   levelPill: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderRadius: 99,
+    borderRadius: Radius.full,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  levelText: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  levelText: { fontFamily: Fonts.bold, fontSize: 10, letterSpacing: 1 },
 
   cardTitle: {
+    fontFamily: Fonts.bold,
     fontSize: 19,
-    fontWeight: '700',
     letterSpacing: -0.4,
-    color: C.white,
+    color: Colors.white,
     lineHeight: 24,
   },
 
@@ -644,12 +606,21 @@ const styles = StyleSheet.create({
   windowBars: { flex: 1, flexDirection: 'row', gap: 1.5, height: 10 },
   windowSegment: { height: 10 },
   windowLabels: { flexDirection: 'row', gap: 4 },
-  windowLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
-  windowLabelEat: { fontSize: 11, color: 'rgba(255,255,255,0.25)', fontWeight: '500' },
+  windowLabel: { fontFamily: Fonts.bold, fontSize: Typography.label, letterSpacing: 0.3 },
+  windowLabelEat: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.label,
+    color: 'rgba(255,255,255,0.25)',
+  },
   windowFree: { paddingVertical: 4 },
-  windowFreeText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
+  windowFreeText: { fontFamily: Fonts.semibold, fontSize: 12, letterSpacing: 0.3 },
 
-  cardDesc: { fontSize: 13, color: C.onSurfaceVariant, lineHeight: 19 },
+  cardDesc: {
+    fontFamily: Fonts.regular,
+    fontSize: Typography.bodySmall,
+    color: Colors.onSurfaceVariant,
+    lineHeight: 19,
+  },
 
   // Benefit pill
   benefitPill: {
@@ -657,80 +628,79 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 7,
     borderWidth: 1,
-    borderRadius: 99,
+    borderRadius: Radius.full,
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignSelf: 'flex-start',
   },
   benefitDot: { width: 5, height: 5, borderRadius: 3 },
-  benefitText: { fontSize: 11, fontWeight: '600' },
+  benefitText: { fontFamily: Fonts.semibold, fontSize: Typography.label },
+
+  // Health warning
+  warningCard: {
+    marginTop: Spacing.md,
+    borderColor: `${Colors.error}40`,
+    backgroundColor: Colors.errorBg,
+  },
+  warningText: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.bodySmall,
+    color: Colors.error,
+    lineHeight: 19,
+  },
+
+  bottomSpacer: { height: 100 },
 
   // Fixed footer
-  footerArea: { backgroundColor: 'rgba(5,15,29,0.95)' },
+  footerArea: { backgroundColor: `${Colors.bg}F2` },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
-    gap: 16,
+    borderTopColor: Header.borderColor,
+    gap: Spacing.md,
   },
   footerInfo: { gap: 2 },
   footerLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.label,
     letterSpacing: 1,
-    color: C.onSurfaceVariant,
+    color: Colors.onSurfaceVariant,
     textTransform: 'uppercase',
   },
-  footerProtocol: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
-
-  // Confirm button
-  confirmBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: C.secondaryContainer,
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-    borderRadius: 99,
-    shadowColor: C.secondaryContainer,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  confirmText: { fontSize: 15, fontWeight: '700', color: '#001e2e' },
+  footerProtocol: { fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 },
+  confirmBtn: { flexShrink: 0 },
 
   // Free duration picker
   freePicker: {
-    backgroundColor: 'rgba(13, 37, 71, 0.6)',
+    backgroundColor: `${Colors.deepBlue}99`,
     borderWidth: 1,
-    borderColor: `${C.secondary}30`,
+    borderColor: `${Colors.secondary}30`,
     borderTopWidth: 0,
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
-    padding: 16,
+    padding: Spacing.md,
     paddingTop: 14,
     gap: 14,
     marginTop: -4,
   },
   freePickerTitle: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
+    fontSize: Typography.label,
     letterSpacing: 1.5,
-    color: C.secondary,
+    color: Colors.secondary,
     textTransform: 'uppercase',
   },
   freeStepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(5,15,29,0.5)',
+    backgroundColor: `${Colors.bg}80`,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: Header.borderColor,
     borderRadius: 14,
     paddingVertical: 4,
     paddingHorizontal: 6,
@@ -740,24 +710,20 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: Radius.sm,
   },
   freeStepValue: { alignItems: 'center', gap: 0 },
-  freeStepNum: { fontSize: 28, fontWeight: '700', color: C.secondary, letterSpacing: -1 },
-  freeStepUnit: { fontSize: 11, color: C.onSurfaceVariant, marginTop: -2 },
-  freePresets: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  freePresetChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+  freeStepNum: {
+    fontFamily: Fonts.bold,
+    fontSize: 28,
+    color: Colors.secondary,
+    letterSpacing: -1,
   },
-  freePresetChipActive: {
-    borderColor: `${C.secondary}50`,
-    backgroundColor: `${C.secondary}15`,
+  freeStepUnit: {
+    fontFamily: Fonts.regular,
+    fontSize: Typography.label,
+    color: Colors.onSurfaceVariant,
+    marginTop: -2,
   },
-  freePresetText: { fontSize: 12, fontWeight: '600', color: C.onSurfaceVariant },
-  freePresetTextActive: { color: C.secondary },
+  freePresets: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
 });

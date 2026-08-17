@@ -1,17 +1,35 @@
+import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
-import { Timer, BookOpen, BarChart2, User } from 'lucide-react-native';
+import { BarChart2, BookOpen, Timer, User } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { Colors } from '@/lib/theme';
+
+/** deepBlue at ~72% opacity layered over the blur. */
+const TAB_BAR_TINT = `${Colors.deepBlue}B8`;
+
+function TabBarBackground() {
+  return (
+    <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill}>
+      <View style={[StyleSheet.absoluteFill, styles.tint]} />
+    </BlurView>
+  );
+}
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#3DB4F2',
-        tabBarInactiveTintColor: '#F5F7FA80',
+        tabBarActiveTintColor: Colors.secondary,
+        tabBarInactiveTintColor: Colors.mutedText,
         tabBarStyle: {
-          backgroundColor: '#0A1F3D',
-          borderTopColor: '#3DB4F220',
+          position: 'absolute',
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          elevation: 0,
         },
+        tabBarBackground: () => <TabBarBackground />,
       }}
     >
       <Tabs.Screen
@@ -45,3 +63,9 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tint: {
+    backgroundColor: TAB_BAR_TINT,
+  },
+});
