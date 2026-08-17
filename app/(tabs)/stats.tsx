@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -19,7 +19,7 @@ import { haptics } from '@/lib/haptics';
 import { useRepositories } from '@/lib/repositories/provider';
 import type { FastSession } from '@/lib/schemas';
 import { useUserStore } from '@/lib/stores/useUserStore';
-import { Colors, Header, Radius, Spacing } from '@/lib/theme';
+import { Colors, Fonts, Header, Radius, Spacing, Typography } from '@/lib/theme';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -567,6 +567,7 @@ function EmptyFasts() {
 // ─── Main screen ─────────────────────────────────────────────────────
 
 export default function StatsScreen() {
+  const router = useRouter();
   const user = useUserStore((s) => s.user);
   const { fastSessions } = useRepositories();
 
@@ -781,7 +782,20 @@ export default function StatsScreen() {
 
             {/* Recent fasts */}
             <View style={styles.section}>
-              <SectionTitle title="Jeûnes récents" />
+              <SectionTitle
+                title="Jeûnes récents"
+                right={
+                  <PressableScale
+                    onPress={() => router.push('/history')}
+                    haptic="selection"
+                    accessibilityLabel="Voir tout l'historique"
+                  >
+                    <Text style={styles.seeAll} maxFontSizeMultiplier={1.3}>
+                      Tout voir
+                    </Text>
+                  </PressableScale>
+                }
+              />
               {recentCompleted.length === 0 ? (
                 <EmptyFasts />
               ) : (
@@ -798,6 +812,11 @@ export default function StatsScreen() {
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  seeAll: {
+    color: Colors.secondary,
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.bodySmall,
+  },
   root: { flex: 1, backgroundColor: Colors.bg },
 
   appBar: {

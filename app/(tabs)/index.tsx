@@ -481,6 +481,7 @@ function IdleScreen({ onStart }: { onStart: (p: Protocol) => void }) {
 // ─── Main screen ─────────────────────────────────────────────────────
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { fastSessions, journalEntries, phasesReached: phasesReachedRepo } = useRepositories();
   const user = useUserStore((s) => s.user);
   const activeSession = useSessionStore((s) => s.activeSession);
@@ -874,8 +875,22 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* Metabolic state */}
-          <View style={styles.metaCard}>
+          {/* Metabolic state — taps through to the phase detail */}
+          <PressableScale
+            style={styles.metaCard}
+            onPress={
+              currentPhaseId
+                ? () =>
+                    router.push({ pathname: '/modal/phase-detail', params: { id: currentPhaseId } })
+                : undefined
+            }
+            haptic="selection"
+            accessibilityLabel={
+              currentPhaseId
+                ? `État métabolique, phase ${phaseInfo.label}. Voir le détail`
+                : 'État métabolique, phase de transition'
+            }
+          >
             <View style={styles.metaHeader}>
               <Text style={styles.metaTitle} maxFontSizeMultiplier={1.3}>
                 État métabolique
@@ -909,7 +924,7 @@ export default function HomeScreen() {
                 {Math.round(metabolicProgress * 100)}%
               </Text>
             </View>
-          </View>
+          </PressableScale>
 
           <View style={styles.bottomSpacer} />
         </ScrollView>

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -5,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Circle, Path, Svg } from 'react-native-svg';
 
 import { AppHeader } from '@/components/AppHeader';
-import { Chip, EmptyState, GlassCard, SectionTitle } from '@/components/ui';
+import { Chip, EmptyState, GlassCard, PressableScale, SectionTitle } from '@/components/ui';
 import lexiconRaw from '@/content/lexicon.json';
 import type { LexiconEntry } from '@/lib/schemas';
 import { Colors, Fonts, Header, Radius, Spacing, Typography } from '@/lib/theme';
@@ -206,6 +207,7 @@ function FeaturedCard({ entry }: { entry: LexiconEntry }) {
 // ─── Main screen ─────────────────────────────────────────────────────
 
 export default function LearnScreen() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<PhaseFilter>('all');
   const [featuredId, setFeaturedId] = useState<string>(lexicon[1]?.id ?? lexicon[0]?.id ?? '');
@@ -268,6 +270,32 @@ export default function LearnScreen() {
             </Pressable>
           )}
         </View>
+
+        {/* Timeline entry card */}
+        <PressableScale
+          onPress={() => router.push('/learn/timeline')}
+          haptic="selection"
+          accessibilityLabel="Ouvrir la timeline biochimique"
+        >
+          <GlassCard deep style={styles.timelineCard}>
+            <View style={styles.timelineCardText}>
+              <Text style={styles.timelineCardTitle} maxFontSizeMultiplier={1.3}>
+                Timeline biochimique
+              </Text>
+              <Text style={styles.timelineCardSub} maxFontSizeMultiplier={1.3}>
+                Le voyage métabolique heure par heure, de 12h à 96h
+              </Text>
+            </View>
+            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M9 18l6-6-6-6"
+                stroke={Colors.secondary}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </Svg>
+          </GlassCard>
+        </PressableScale>
 
         {/* Phase filter chips */}
         <ScrollView
@@ -371,6 +399,24 @@ const styles = StyleSheet.create({
   },
 
   // Search
+  timelineCard: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
+  },
+  timelineCardText: { flex: 1, gap: 3 },
+  timelineCardTitle: {
+    color: Colors.white,
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.body,
+  },
+  timelineCardSub: {
+    color: Colors.mutedText,
+    fontFamily: Fonts.regular,
+    fontSize: Typography.bodySmall,
+  },
   searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',

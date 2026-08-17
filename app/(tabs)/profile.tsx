@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { useCallback, useState } from 'react';
 import { Alert, Linking, StyleSheet, Switch, Text, View } from 'react-native';
@@ -6,6 +7,7 @@ import { Svg, Path, Circle } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { GlassCard, ListRow, PressableScale, Screen, SectionTitle } from '@/components/ui';
+import { bootstrapUser, signOutSession } from '@/lib/auth';
 import { calculateStreak } from '@/lib/domain/fasting';
 import { haptics } from '@/lib/haptics';
 import {
@@ -218,12 +220,11 @@ export default function ProfileScreen() {
   const user = useUserStore((s) => s.user);
   const endSession = useSessionStore((s) => s.endSession);
   const setUser = useUserStore((s) => s.setUser);
-  const { fastSessions } = useRepositories();
+  const { fastSessions, users } = useRepositories();
 
   const firstName = useAppSettingsStore((s) => s.firstName);
   const targetWeightKg = useAppSettingsStore((s) => s.targetWeightKg);
   const primaryGoal = useAppSettingsStore((s) => s.primaryGoal);
-  const language = useAppSettingsStore((s) => s.language);
   const notificationsEnabled = useAppSettingsStore((s) => s.notificationsEnabled);
   const setNotificationsEnabled = useAppSettingsStore((s) => s.setNotificationsEnabled);
 
@@ -268,18 +269,62 @@ export default function ProfileScreen() {
 
   function handleLogout() {
     haptics.warning();
-    Alert.alert('Se déconnecter', 'Voulez-vous vraiment vous déconnecter ?', [
-      { text: 'Annuler', style: 'cancel' },
-      {
-        text: 'Se déconnecter',
-        style: 'destructive',
-        onPress: () => {
-          endSession();
-          setUser(null);
-          router.replace('/(auth)/login');
+    Alert.alert(
+      'Se déconnecter',
+      'Votre session sera fermée. Vos données restent enregistrées sur cet appareil.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Se déconnecter',
+          style: 'destructive',
+          onPress: () => {
+            void signOutSession().finally(() => {
+              router.replace('/(auth)/login');
+            });
+          },
         },
-      },
-    ]);
+      ]
+    );
+  }
+
+  function handleResetData() {
+    haptics.warning();
+    Alert.alert(
+      'Réinitialiser mes données',
+      'Tous vos jeûnes, votre journal et vos réglages seront définitivement effacés de cet appareil.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Continuer',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('Dernière confirmation', 'Cette action est irréversible. Tout effacer ?', [
+              { text: 'Annuler', style: 'cancel' },
+              {
+                text: 'Tout effacer',
+                style: 'destructive',
+                onPress: () => void resetAllData(),
+              },
+            ]);
+          },
+        },
+      ]
+    );
+  }
+
+  async function resetAllData() {
+    try {
+      await cancelScheduledNotifications().catch(() => {});
+      await signOutSession();
+      if (user) await users.delete(user.id); // CASCADE wipes sessions/journal/phases
+      await AsyncStorage.clear();
+      endSession();
+      const { user: freshGuest } = await bootstrapUser(users);
+      setUser(freshGuest);
+      router.replace('/(auth)/onboarding');
+    } catch {
+      Alert.alert('Erreur', "La réinitialisation a échoué. Relancez l'application et réessayez.");
+    }
   }
 
   return (
@@ -427,9 +472,10 @@ export default function ProfileScreen() {
             <ListRow
               icon={<GlobeIcon color={ICON_ACCENTS.emerald} />}
               iconBg={`${ICON_ACCENTS.emerald}24`}
-              label="Langue"
-              sublabel={language === 'fr' ? 'Français' : 'English'}
-              onPress={() => router.push('/modal/language')}
+              label="Réinitialiser mes données"
+              sublabel="Efface tout et repart de zéro"
+              onPress={handleResetData}
+              destructive
               isLast
             />
           </GlassCard>
@@ -460,17 +506,28 @@ export default function ProfileScreen() {
           </GlassCard>
         </View>
 
-        {/* Logout */}
+        {/* Account action: sign out (linked account) or sign up (guest) */}
         <GlassCard padded={false} style={styles.listCard}>
-          <ListRow
-            icon={<LogoutIcon />}
-            iconBg={`${Colors.error}14`}
-            label="Se déconnecter"
-            destructive
-            chevron={false}
-            onPress={handleLogout}
-            isLast
-          />
+          {user?.isGuest ? (
+            <ListRow
+              icon={<LogoutIcon />}
+              iconBg={`${Colors.cyan}14`}
+              label="Créer un compte"
+              sublabel="Sauvegardez vos données avec un compte FastLife"
+              onPress={() => router.push('/(auth)/login')}
+              isLast
+            />
+          ) : (
+            <ListRow
+              icon={<LogoutIcon />}
+              iconBg={`${Colors.error}14`}
+              label="Se déconnecter"
+              destructive
+              chevron={false}
+              onPress={handleLogout}
+              isLast
+            />
+          )}
         </GlassCard>
         <Text style={styles.version} maxFontSizeMultiplier={1.3}>
           FASTLIFE v{Constants.expoConfig?.version ?? '1.0.0'}

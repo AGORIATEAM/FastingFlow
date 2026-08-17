@@ -12,10 +12,6 @@ export default function ModalLayout() {
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
       />
       <Stack.Screen
-        name="language"
-        options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-      />
-      <Stack.Screen
         name="phase-detail"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
       />
