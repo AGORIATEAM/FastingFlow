@@ -82,6 +82,14 @@ const migrations: Migration[] = [
       ALTER TABLE journal_entry ADD COLUMN water_ml INTEGER NOT NULL DEFAULT 0;
     `,
   },
+  {
+    version: 3,
+    name: '003_user_supabase_id',
+    up: `
+      ALTER TABLE user ADD COLUMN supabase_id TEXT;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_user_supabase_id ON user(supabase_id) WHERE supabase_id IS NOT NULL;
+    `,
+  },
 ];
 
 export function runMigrations(db: SQLiteDatabase): void {

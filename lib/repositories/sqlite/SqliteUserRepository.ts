@@ -14,6 +14,7 @@ interface UserRow {
   id: string;
   email: string | null;
   password_hash: string | null;
+  supabase_id: string | null;
   is_guest: number;
   display_name: string | null;
   dob: string | null;
@@ -30,6 +31,7 @@ function rowToUser(row: UserRow): User {
     id: row.id,
     email: row.email,
     passwordHash: row.password_hash,
+    supabaseId: row.supabase_id,
     isGuest: row.is_guest === 1,
     displayName: row.display_name,
     dob: row.dob,
@@ -61,21 +63,22 @@ export class SqliteUserRepository implements IUserRepository {
   }
 
   async create(data: CreateUser): Promise<User> {
-    CreateUserSchema.parse(data);
+    const parsed = CreateUserSchema.parse(data);
     const now = new Date().toISOString();
     this.db.runSync(
-      `INSERT INTO user (id, email, password_hash, is_guest, display_name, dob, gender, weight_kg, height_cm, goal, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      data.id,
-      data.email,
-      data.passwordHash,
-      data.isGuest ? 1 : 0,
-      data.displayName,
-      data.dob,
-      data.gender,
-      data.weightKg,
-      data.heightCm,
-      data.goal,
+      `INSERT INTO user (id, email, password_hash, supabase_id, is_guest, display_name, dob, gender, weight_kg, height_cm, goal, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      parsed.id,
+      parsed.email,
+      parsed.passwordHash,
+      parsed.supabaseId,
+      parsed.isGuest ? 1 : 0,
+      parsed.displayName,
+      parsed.dob,
+      parsed.gender,
+      parsed.weightKg,
+      parsed.heightCm,
+      parsed.goal,
       now,
       now
     );
@@ -97,6 +100,10 @@ export class SqliteUserRepository implements IUserRepository {
     if (data.passwordHash !== undefined) {
       sets.push('password_hash = ?');
       values.push(data.passwordHash);
+    }
+    if (data.supabaseId !== undefined) {
+      sets.push('supabase_id = ?');
+      values.push(data.supabaseId);
     }
     if (data.isGuest !== undefined) {
       sets.push('is_guest = ?');

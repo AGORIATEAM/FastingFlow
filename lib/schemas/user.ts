@@ -13,6 +13,7 @@ export const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email().nullable(),
   passwordHash: z.string().nullable(),
+  supabaseId: z.string().nullable(),
   isGuest: z.boolean(),
   displayName: z.string().nullable(),
   dob: z.string().nullable(),
@@ -28,6 +29,7 @@ export const CreateUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email().nullable(),
   passwordHash: z.string().nullable(),
+  supabaseId: z.string().nullable().default(null),
   isGuest: z.boolean(),
   displayName: z.string().nullable(),
   dob: z.string().nullable(),
@@ -38,8 +40,9 @@ export const CreateUserSchema = z.object({
 });
 
 export const UpdateUserSchema = z.object({
-  email: z.string().email().optional(),
-  passwordHash: z.string().optional(),
+  email: z.string().email().nullable().optional(),
+  passwordHash: z.string().nullable().optional(),
+  supabaseId: z.string().nullable().optional(),
   isGuest: z.boolean().optional(),
   displayName: z.string().nullable().optional(),
   dob: z.string().nullable().optional(),

@@ -26,6 +26,7 @@ export async function bootstrapUser(userRepo: IUserRepository): Promise<Bootstra
     id: randomUUID(),
     email: null,
     passwordHash: null,
+    supabaseId: null,
     isGuest: true,
     displayName: null,
     dob: null,
