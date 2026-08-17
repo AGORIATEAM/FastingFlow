@@ -40,10 +40,6 @@ yarn-error.*
 /ios
 /android
 
-# content generated files (source of truth = docs-source/)
-/content/phases.json
-/content/lexicon.json
-
 # coverage
 /coverage
 

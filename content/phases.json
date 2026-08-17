@@ -1,0 +1,324 @@
+[
+  {
+    "id": "12h",
+    "triggerHours": 12,
+    "title": "12 heures de jeûne",
+    "whatHappens": [
+      "La phase digestive est terminée : l’organisme quitte l’état postprandial (« nourri ») pour entrer dans l’état de jeûne.",
+      "La mobilisation initiale du glycogène hépatique commence, permettant de maintenir la glycémie."
+    ],
+    "mechanisms": [
+      {
+        "name": "Baisse progressive de l’insuline",
+        "description": "La diminution de cette hormone réduit la signalisation anabolique et prépare le corps à puiser dans ses réserves."
+      },
+      {
+        "name": "Mobilisation du glycogène",
+        "description": "Le foie commence à utiliser ses réserves de glycogène pour fournir de l’énergie."
+      }
+    ],
+    "bodyBenefits": [
+      "Amélioration de la sensibilité à l’insuline, favorisant une meilleure régulation de la glycémie et préparant le métabolisme aux phases plus avancées.",
+      "Début de la transition vers l’utilisation des réserves énergétiques, ce qui peut, sur le long terme, diminuer le risque de diabète de type 2 et améliorer la santé cardiovasculaire."
+    ],
+    "mindBenefits": [
+      "Stabilisation de la glycémie, susceptible de favoriser une clarté mentale initiale et de réduire la fatigue liée aux variations d’énergie.",
+      "Un premier « nettoyage » cellulaire peut contribuer à une meilleure régulation de l’humeur."
+    ],
+    "keyTerms": ["insuline"]
+  },
+  {
+    "id": "16h",
+    "triggerHours": 16,
+    "title": "16 heures de jeûne",
+    "whatHappens": [
+      "Le corps entame une transition marquée de l’utilisation du glucose vers celle des graisses stockées."
+    ],
+    "mechanisms": [
+      {
+        "name": "Activation de la lipolyse",
+        "description": "La baisse d’insuline active l’enzyme hormone-sensitive lipase qui dégrade les triglycérides en acides gras libres."
+      },
+      {
+        "name": "Début de la cétogenèse légère",
+        "description": "Les acides gras libérés sont partiellement convertis en corps cétoniques, fournissant une source d’énergie alternative au cerveau et aux muscles."
+      }
+    ],
+    "bodyBenefits": [
+      "Réduction progressive des réserves de graisses et amélioration de la santé cardiovasculaire grâce à une meilleure gestion des pics glycémiques.",
+      "Prévention du diabète par l’optimisation de la sensibilité à l’insuline et la diminution des variations glycémiques."
+    ],
+    "mindBenefits": [
+      "Apport d’énergie alternative au cerveau par les premiers corps cétoniques, favorisant une concentration soutenue.",
+      "Une régulation plus stable du métabolisme contribue à atténuer les variations d’humeur et à réduire le stress mental."
+    ],
+    "keyTerms": ["insuline", "cetose"]
+  },
+  {
+    "id": "18h",
+    "triggerHours": 18,
+    "title": "18 heures de jeûne",
+    "whatHappens": [
+      "Les réserves de glycogène s’amenuisent et le foie intensifie la production de corps cétoniques."
+    ],
+    "mechanisms": [
+      {
+        "name": "Renforcement de la cétogenèse",
+        "description": "La production accrue de corps cétoniques, notamment du bêta-hydroxybutyrate, apporte une énergie alternative efficace pour le cerveau et les muscles."
+      },
+      {
+        "name": "Déclenchement de l’autophagie",
+        "description": "L’inhibition progressive de mTOR amorce un processus de « nettoyage » cellulaire qui recycle les composants endommagés."
+      }
+    ],
+    "bodyBenefits": [
+      "Élimination des cellules endommagées et prévention de l’accumulation de protéines anormales, contribuant à une meilleure santé cellulaire et à la réduction du stress oxydatif.",
+      "Optimisation de l’utilisation des graisses pour un métabolisme énergétique plus efficace."
+    ],
+    "mindBenefits": [
+      "Effets neuroprotecteurs du bêta-hydroxybutyrate favorisent la clarté mentale et une meilleure fonction cognitive.",
+      "La diminution du stress oxydatif dans le cerveau aide à stabiliser l’humeur et à prévenir des troubles neurodégénératifs."
+    ],
+    "keyTerms": ["insuline", "cetose", "autophagie", "beta-hydroxybutyrate"]
+  },
+  {
+    "id": "24h",
+    "triggerHours": 24,
+    "title": "24 heures de jeûne",
+    "whatHappens": [
+      "Les réserves de glycogène hépatique sont quasiment épuisées. Le corps bascule vers une dépendance quasi-exclusive aux graisses."
+    ],
+    "mechanisms": [
+      {
+        "name": "Cétose complète",
+        "description": "Le foie convertit la majorité des acides gras en corps cétoniques, qui deviennent la principale source d’énergie pour le cerveau et les muscles."
+      },
+      {
+        "name": "Autophagie amplifiée",
+        "description": "Le processus de recyclage cellulaire s’intensifie pour éliminer organites et protéines endommagées."
+      },
+      {
+        "name": "Augmentation du glucagon",
+        "description": "Un ratio glucagon/insuline élevé renforce la mobilisation des réserves énergétiques."
+      }
+    ],
+    "bodyBenefits": [
+      "Diminution du risque de cancer grâce à l’élimination des cellules potentiellement dysfonctionnelles.",
+      "Amélioration de la santé cardiovasculaire et prévention du diabète par une meilleure gestion du métabolisme lipidique et de la glycémie.",
+      "Renforcement des processus de réparation cellulaire."
+    ],
+    "mindBenefits": [
+      "Fourniture d’une énergie stable pour le cerveau, améliorant la concentration, la vigilance et la gestion du stress.",
+      "Réduction du stress oxydatif cérébral, favorisant une meilleure stabilité émotionnelle et une clarté mentale accrue."
+    ],
+    "keyTerms": ["insuline", "cetose", "autophagie", "beta-hydroxybutyrate", "glucagon"]
+  },
+  {
+    "id": "36h",
+    "triggerHours": 36,
+    "title": "36 heures de jeûne",
+    "whatHappens": [
+      "Le corps est solidement engagé dans une production élevée de corps cétoniques et optimise l’utilisation des graisses."
+    ],
+    "mechanisms": [
+      {
+        "name": "Cétose approfondie",
+        "description": "Les niveaux de corps cétoniques augmentent significativement, assurant une énergie stable pour le cerveau et les muscles."
+      },
+      {
+        "name": "Optimisation de l’autophagie",
+        "description": "Le nettoyage cellulaire se renforce pour éliminer les cellules dysfonctionnelles."
+      },
+      {
+        "name": "Réduction de l’inflammation",
+        "description": "Les corps cétoniques participent à la modulation de la réponse inflammatoire."
+      }
+    ],
+    "bodyBenefits": [
+      "Amélioration globale du métabolisme qui aide à réduire les risques d’obésité et de troubles métaboliques.",
+      "Limitation de l’inflammation chronique, facteur clé dans le développement de maladies cardiovasculaires et métaboliques."
+    ],
+    "mindBenefits": [
+      "Favorise une meilleure performance cérébrale, renforçant la concentration, la mémoire et la stabilité de l’humeur.",
+      "La réduction des toxines et de l’inflammation contribue à diminuer la fatigue mentale et l’anxiété."
+    ],
+    "keyTerms": ["insuline", "cetose", "autophagie", "beta-hydroxybutyrate", "glucagon"]
+  },
+  {
+    "id": "48h",
+    "triggerHours": 48,
+    "title": "48 heures de jeûne",
+    "whatHappens": [
+      "Le jeûne entre dans une phase prolongée où le métabolisme est fortement réorienté vers la maintenance cellulaire."
+    ],
+    "mechanisms": [
+      {
+        "name": "Autophagie intensive",
+        "description": "Le recyclage des composants cellulaires est intensifié, aidé par l’activation des sirtuines et d’AMPK."
+      },
+      {
+        "name": "Suppression de mTOR",
+        "description": "La réduction de cette activité permet de limiter la croissance cellulaire non essentielle et d’orienter les ressources vers la réparation."
+      }
+    ],
+    "bodyBenefits": [
+      "Protection contre le vieillissement cellulaire et renforcement des défenses contre le stress oxydatif.",
+      "Prévention des maladies neurodégénératives grâce à une élimination efficace des protéines toxiques.",
+      "Amélioration de la fonction immunitaire et réduction des inflammations systémiques."
+    ],
+    "mindBenefits": [
+      "Amélioration de la fonction cognitive et clarté mentale accrue par la réduction du stress oxydatif dans le cerveau.",
+      "Potentielle amélioration de l’humeur et diminution des symptômes de dépression.",
+      "Une sensation de renouveau mental induite par le nettoyage cellulaire intensif."
+    ],
+    "keyTerms": [
+      "insuline",
+      "cetose",
+      "autophagie",
+      "beta-hydroxybutyrate",
+      "glucagon",
+      "mtor",
+      "sirtuine",
+      "ampk",
+      "mitophagie"
+    ]
+  },
+  {
+    "id": "56h",
+    "triggerHours": 56,
+    "title": "56 heures de jeûne",
+    "whatHappens": ["Les mécanismes amorcés précédemment se maintiennent et se perfectionnent."],
+    "mechanisms": [
+      {
+        "name": "Maintien de la cétose avancée",
+        "description": "Le corps conserve des niveaux élevés de corps cétoniques pour un apport énergétique constant."
+      },
+      {
+        "name": "Poursuite de l’autophagie",
+        "description": "Les voies de dégradation et de recyclage continuent à fonctionner efficacement."
+      },
+      {
+        "name": "Activation de gènes de survie",
+        "description": "Des voies, telles que celles régulées par FOXO, sont stimulées, renforçant la résistance aux stress."
+      }
+    ],
+    "bodyBenefits": [
+      "Prévention des maladies métaboliques et amélioration de la composition corporelle par une meilleure gestion des réserves lipidiques.",
+      "Renforcement de la résilience cellulaire, permettant une meilleure adaptation aux stress environnementaux."
+    ],
+    "mindBenefits": [
+      "Maintien de la concentration et de la vigilance grâce à un apport énergétique constant.",
+      "Meilleure gestion du stress et réduction de l’anxiété par une diminution de l’inflammation systémique.",
+      "Effet positif sur l’humeur par la modulation des signaux cellulaires de survie."
+    ],
+    "keyTerms": [
+      "insuline",
+      "cetose",
+      "autophagie",
+      "beta-hydroxybutyrate",
+      "glucagon",
+      "mtor",
+      "sirtuine",
+      "ampk",
+      "mitophagie",
+      "foxo",
+      "igf-1"
+    ]
+  },
+  {
+    "id": "72h",
+    "triggerHours": 72,
+    "title": "72 heures de jeûne",
+    "whatHappens": [
+      "Le corps atteint une adaptation métabolique complète, avec une cétose profonde et un nettoyage cellulaire optimal."
+    ],
+    "mechanisms": [
+      {
+        "name": "Cétose profonde",
+        "description": "La majorité de l’énergie est fournie par les corps cétoniques, ce qui permet de préserver la masse musculaire et d’optimiser la fonction cérébrale."
+      },
+      {
+        "name": "Régénération immunitaire",
+        "description": "Des études suggèrent que le jeûne de cette durée peut favoriser l’apoptose des cellules immunitaires vieillissantes, suivie d’un renouvellement des cellules."
+      },
+      {
+        "name": "Autophagie maximale",
+        "description": "Le nettoyage cellulaire atteint son apogée, éliminant les déchets et améliorant la santé cellulaire globale."
+      },
+      {
+        "name": "Amélioration de la sensibilité à l’insuline",
+        "description": "La réduction prolongée des niveaux d’insuline optimise la réponse métabolique."
+      }
+    ],
+    "bodyBenefits": [
+      "Réduction significative des inflammations systémiques, limitant le risque de maladies chroniques telles que les affections cardiovasculaires et certains cancers.",
+      "Amélioration de la régénération cellulaire, renforçant la longévité et la vitalité.",
+      "Optimisation globale du métabolisme, aidant à prévenir les troubles liés au vieillissement."
+    ],
+    "mindBenefits": [
+      "Amélioration de la fonction cognitive et protection contre les troubles neurodégénératifs grâce à une neuroprotection renforcée.",
+      "Diminution de l’anxiété et meilleure gestion du stress, favorisées par un environnement cellulaire sain.",
+      "Une sensation de bien-être mental et une clarté d’esprit renforcées par la régénération immunitaire."
+    ],
+    "keyTerms": [
+      "insuline",
+      "cetose",
+      "autophagie",
+      "beta-hydroxybutyrate",
+      "glucagon",
+      "mtor",
+      "sirtuine",
+      "ampk",
+      "mitophagie",
+      "foxo",
+      "igf-1"
+    ]
+  },
+  {
+    "id": "96h",
+    "triggerHours": 96,
+    "title": "96 heures de jeûne",
+    "whatHappens": [
+      "Le corps entre dans une phase extrême de conservation où toutes les adaptations métaboliques sont pleinement déployées."
+    ],
+    "mechanisms": [
+      {
+        "name": "Autophagie et \\*\\*mitophagie\\*\\* optimisées",
+        "description": "Le recyclage intensif des cellules et des mitochondries endommagées permet une régénération cellulaire en profondeur."
+      },
+      {
+        "name": "Adaptations hormonales marquées",
+        "description": "Les niveaux d’insuline et d’IGF-1 chutent drastiquement tandis que la production d’hormone de croissance augmente, préservant la masse musculaire et stimulant la réparation tissulaire."
+      },
+      {
+        "name": "Réduction du stress oxydatif et de l’inflammation",
+        "description": "Les signaux générés par la cétose, notamment via le bêta-hydroxybutyrate, diminuent l’inflammation et améliorent la résilience face aux agressions."
+      }
+    ],
+    "bodyBenefits": [
+      "Réduction significative du risque de cancers par l’élimination des cellules dysfonctionnelles et la limitation des signaux de croissance excessive.",
+      "Amélioration de la santé cardiovasculaire grâce à la réduction marquée de l’inflammation et du stress oxydatif.",
+      "Protection contre les maladies liées au vieillissement et stimulation des mécanismes de réparation tissulaire."
+    ],
+    "mindBenefits": [
+      "Neuroprotection avancée assurant une meilleure fonction cognitive, une mémoire renforcée et une stabilité émotionnelle accrue.",
+      "Diminution de l’inflammation cérébrale, ce qui contribue à réduire le stress et à favoriser une clarté mentale ainsi qu’un bien-être profond.",
+      "Un état global de renouveau mental, soutenu par des adaptations hormonales et un nettoyage cellulaire complets.",
+      "Sur le corps : Amélioration de la sensibilité à l’insuline, réduction de l’inflammation, protection contre le vieillissement et diminution des risques de maladies métaboliques, cardiovasculaires, neurodégénératives et de cancers.",
+      "Sur l’esprit : Apport énergétique stable, neuroprotection, meilleure gestion du stress, clarté mentale et équilibre émotionnel, favorisant ainsi une santé globale optimale."
+    ],
+    "keyTerms": [
+      "insuline",
+      "cetose",
+      "autophagie",
+      "beta-hydroxybutyrate",
+      "glucagon",
+      "mtor",
+      "sirtuine",
+      "ampk",
+      "mitophagie",
+      "foxo",
+      "igf-1"
+    ]
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "cetose",
+    "name": "Cétose",
+    "definition": "La cétose est un état métabolique dans lequel, en l’absence ou en cas de très faible apport en glucides, le foie convertit les acides gras en corps cétoniques (acétone, acétoacétate et bêta-hydroxybutyrate). Ces cétones deviennent alors la principale source d’énergie pour de nombreux tissus, notamment le cerveau et les muscles.",
+    "bodyImpact": "Permet la préservation des réserves de glycogène, favorise la combustion des graisses et peut améliorer la sensibilité à l’insuline.",
+    "mindImpact": "Les corps cétoniques, en particulier le bêta-hydroxybutyrate, offrent une énergie efficace pour le cerveau, contribuant à une meilleure clarté mentale et à une stabilité de l’humeur.",
+    "activationPhases": ["16h", "18h", "24h", "36h", "48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "autophagie",
+    "name": "Autophagie",
+    "definition": "L’autophagie est un processus cellulaire de « nettoyage » par lequel la cellule dégrade et recycle ses propres composants endommagés ou inutilisés. Ce mécanisme permet la régulation de la qualité cellulaire, en éliminant des protéines agrégées et des organites défectueux.",
+    "bodyImpact": "Améliore la santé cellulaire en réduisant le stress oxydatif, en protégeant contre le vieillissement et en contribuant à la prévention de maladies neurodégénératives et du cancer.",
+    "mindImpact": "Un nettoyage cellulaire efficace aide à maintenir une fonction neuronale optimale, ce qui peut favoriser la clarté cognitive et la régulation de l’humeur.",
+    "activationPhases": ["18h", "24h", "36h", "48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "mitophagie",
+    "name": "Mitophagie",
+    "definition": "La mitophagie est une forme spécialisée d’autophagie qui cible spécifiquement les mitochondries endommagées ou dysfonctionnelles.",
+    "bodyImpact": "En éliminant les mitochondries défectueuses, la mitophagie préserve l’efficacité énergétique des cellules et limite la production excessive de radicaux libres, réduisant ainsi le stress oxydatif.",
+    "mindImpact": "Le maintien d’une fonction mitochondriale optimale contribue à une meilleure performance cérébrale et à la prévention de troubles neurodégénératifs.",
+    "activationPhases": ["48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "beta-hydroxybutyrate",
+    "name": "Bêta-hydroxybutyrate",
+    "definition": "Le bêta-hydroxybutyrate (BHB) est l’un des principaux corps cétoniques produits lors de la cétose. Il sert de carburant alternatif en l’absence d’un apport suffisant en glucose.",
+    "bodyImpact": "En fournissant une source d’énergie efficace, le BHB aide à préserver la masse musculaire et à favoriser la combustion des graisses.",
+    "mindImpact": "Il possède des propriétés neuroprotectrices et anti-inflammatoires qui peuvent améliorer la fonction cognitive, réduire la fatigue mentale et contribuer à une meilleure humeur.",
+    "activationPhases": ["18h", "24h", "36h", "48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "mtor",
+    "name": "mTOR",
+    "definition": "mTOR (mammalian target of rapamycin) est une protéine kinase centrale dans la régulation de la croissance cellulaire, de la synthèse protéique et du métabolisme.",
+    "bodyImpact": "Une activité élevée de mTOR favorise l’anabolisme (croissance et prolifération cellulaire) ; son inhibition, souvent induite par le jeûne ou la restriction calorique, stimule l’autophagie, protégeant ainsi les cellules contre le stress et le vieillissement.",
+    "mindImpact": "En modulant les processus de réparation cellulaire, une régulation adéquate de mTOR peut contribuer à maintenir une fonction cérébrale optimale et à réduire les risques de maladies neurodégénératives.",
+    "activationPhases": ["48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "glucagon",
+    "name": "Glucagon",
+    "definition": "Le glucagon est une hormone produite par les cellules alpha du pancréas. Il agit en opposition à l’insuline en augmentant la glycémie.",
+    "bodyImpact": "En stimulant la glycogénolyse (dégradation du glycogène en glucose) et la néoglucogenèse, il assure un approvisionnement en glucose pendant les périodes de jeûne, contribuant à l’homéostasie énergétique.",
+    "mindImpact": "Un équilibre entre glucagon et insuline garantit une disponibilité énergétique stable pour le cerveau, essentiel au maintien de la concentration et de la vigilance.",
+    "activationPhases": ["24h", "36h", "48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "insuline",
+    "name": "Insuline",
+    "definition": "L’insuline est une hormone produite par les cellules bêta du pancréas, jouant un rôle crucial dans la régulation de la glycémie.",
+    "bodyImpact": "Elle permet l’absorption du glucose par les cellules pour la production d’énergie ou son stockage sous forme de glycogène et de lipides. Une bonne sensibilité à l’insuline est primordiale pour prévenir le diabète de type 2 et les troubles métaboliques.",
+    "mindImpact": "Une glycémie stable contribue à une meilleure fonction cérébrale et à une humeur équilibrée, réduisant les risques d’hyperactivité neuronale ou de fatigue cognitive.",
+    "activationPhases": ["12h", "16h", "18h", "24h", "36h", "48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "sirtuine",
+    "name": "Sirtuine",
+    "definition": "Les sirtuines sont une famille de protéines qui jouent un rôle essentiel dans la régulation du métabolisme, la réponse au stress, la réparation de l’ADN et la longévité cellulaire.",
+    "bodyImpact": "Leur activation, notamment lors de la restriction calorique ou du jeûne, aide à protéger contre le vieillissement cellulaire et à améliorer la fonction mitochondriale, contribuant ainsi à la prévention de maladies métaboliques et neurodégénératives.",
+    "mindImpact": "En favorisant la résistance au stress cellulaire, elles participent à la préservation de la fonction cognitive et à une meilleure résilience face aux agressions environnementales.",
+    "activationPhases": ["48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "ampk",
+    "name": "AMPK",
+    "definition": "AMPK (AMP-activated protein kinase) est une enzyme qui agit comme un capteur énergétique de la cellule.",
+    "bodyImpact": "En réponse à un déficit énergétique (hausse du rapport AMP/ATP), AMPK est activé et stimule les voies cataboliques pour produire de l’énergie tout en inhibant les processus anaboliques. Cela favorise la combustion des graisses et l’amélioration de la sensibilité à l’insuline.",
+    "mindImpact": "Un approvisionnement énergétique stable grâce à AMPK aide à maintenir la fonction cérébrale, réduisant ainsi la fatigue mentale et soutenant la concentration.",
+    "activationPhases": ["48h", "56h", "72h", "96h"]
+  },
+  {
+    "id": "foxo",
+    "name": "FOXO",
+    "definition": "FOXO désigne une famille de facteurs de transcription qui régulent l’expression de gènes impliqués dans la résistance au stress, la réparation cellulaire, le métabolisme et la longévité.",
+    "bodyImpact": "Leur activation conduit à une meilleure gestion du stress cellulaire, à l’activation de l’autophagie et à la protection contre les dommages oxydatifs, ce qui aide à prévenir diverses maladies liées à l’âge et au stress.",
+    "mindImpact": "En favorisant la survie cellulaire et la réparation, les FOXO contribuent à maintenir une fonction neuronale optimale et à protéger contre le déclin cognitif.",
+    "activationPhases": ["56h", "72h", "96h"]
+  },
+  {
+    "id": "igf-1",
+    "name": "IGF-1",
+    "definition": "L’IGF-1 (insulin-like growth factor 1) est une hormone structurellement similaire à l’insuline, essentielle pour la croissance, le développement cellulaire et la régénération tissulaire.",
+    "bodyImpact": "L’IGF-1 favorise la prolifération et la différenciation cellulaire. Cependant, des niveaux élevés peuvent stimuler des processus anaboliques excessifs et sont parfois associés à un risque accru de certains cancers. La réduction de l’IGF-1, comme lors du jeûne, est souvent liée à une diminution de la prolifération cellulaire et à des effets anti-âge.",
+    "mindImpact": "Un équilibre optimal en IGF-1 est important pour le développement neuronal et le maintien des fonctions cognitives, tout en limitant les effets potentiellement délétères d’une surstimulation cellulaire.",
+    "activationPhases": ["56h", "72h", "96h"]
+  }
+]
