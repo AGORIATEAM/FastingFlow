@@ -3,8 +3,10 @@ import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Expo inlines EXPO_PUBLIC_* at bundle time; process.env is untyped here
+const env = process.env as Record<string, string | undefined>;
+const url = env.EXPO_PUBLIC_SUPABASE_URL;
+const anonKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null = null;
 
