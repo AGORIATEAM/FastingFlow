@@ -1,5 +1,11 @@
-import '../global.css';
-
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -30,6 +36,13 @@ function AppBootstrap() {
   const [done, setDone] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    SpaceGrotesk_700Bold,
+  });
 
   useEffect(() => {
     void SplashScreen.hideAsync();
@@ -52,7 +65,8 @@ function AppBootstrap() {
     };
   }, [users, router, setUser, attempt]);
 
-  if (done) return null;
+  // Fall back to system fonts on load error rather than blocking forever
+  if (done && (fontsLoaded || fontError !== null)) return null;
 
   if (failed) {
     return (

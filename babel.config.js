@@ -6,7 +6,6 @@ module.exports = function (api) {
       [
         'babel-preset-expo',
         {
-          jsxImportSource: 'nativewind',
           // babel-preset-expo auto-loads reanimated plugin, which requires
           // react-native-worklets that is unavailable in Jest's Node env
           reanimated: !isTest,

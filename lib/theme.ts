@@ -1,38 +1,39 @@
 /**
  * FastLife shared design system — single source of truth for all screens.
- * NO react-native-reanimated. NO inline magic numbers.
+ * Canonical palette: deep-blue glassmorphism (base #050F1D / surface #0D2547).
  */
 
 export const Colors = {
   // Backgrounds
   bg: '#050F1D',
-  surface: '#131316',
-  surfaceContainer: '#1f1f22',
-  surfaceHigh: '#292a2c',
   deepBlue: '#0D2547',
+  primaryContainer: '#0a1f3d',
 
   // Glass
   glass: 'rgba(13, 37, 71, 0.45)',
   glassBorder: 'rgba(245, 247, 250, 0.10)',
   glassBorderDim: 'rgba(255, 255, 255, 0.06)',
 
-  // Brand
+  // Brand accents
   cyan: '#3DB4F2',
   secondary: '#84cfff',
   secondaryContainer: '#009ad7',
   tertiary: '#45dfa4',
   tertiaryContainer: '#002517',
-  primaryContainer: '#0a1f3d',
+  ring: '#1a3060',
 
   // Text
   onSurface: '#e4e2e5',
   onSurfaceVariant: '#c5c6ce',
+  /** Muted text that still passes WCAG AA on #050F1D — use instead of `${x}60` */
+  mutedText: '#8fa3bf',
   outline: '#8e9098',
   white: '#ffffff',
 
   // Feedback
   error: '#ffb4ab',
   errorBg: 'rgba(147,0,10,0.12)',
+  divider: 'rgba(255,255,255,0.05)',
 } as const;
 
 export const Spacing = {
@@ -54,6 +55,14 @@ export const Radius = {
   full: 9999,
 } as const;
 
+export const Fonts = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  display: 'SpaceGrotesk_700Bold',
+} as const;
+
 export const Typography = {
   // Sizes
   display: 48,
@@ -63,7 +72,6 @@ export const Typography = {
   body: 15,
   bodySmall: 13,
   label: 11,
-  micro: 9,
 
   // Weights
   bold: '700' as const,
@@ -72,10 +80,44 @@ export const Typography = {
   regular: '400' as const,
 } as const;
 
+/** Composed text presets — spread into StyleSheet entries. */
+export const TextStyles = {
+  displayTimer: {
+    fontFamily: Fonts.display,
+    fontSize: 56,
+    color: Colors.white,
+    fontVariant: ['tabular-nums'] as const,
+    letterSpacing: -1,
+  },
+  h1: { fontFamily: Fonts.bold, fontSize: Typography.h1, color: Colors.white },
+  h2: { fontFamily: Fonts.bold, fontSize: Typography.h2, color: Colors.onSurface },
+  h3: { fontFamily: Fonts.semibold, fontSize: Typography.h3, color: Colors.onSurface },
+  body: { fontFamily: Fonts.regular, fontSize: Typography.body, color: Colors.onSurfaceVariant },
+  label: {
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.label,
+    color: Colors.mutedText,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as const,
+  },
+} as const;
+
 export const Header = {
   height: 56,
   bg: 'rgba(13, 37, 71, 0.88)',
   borderColor: 'rgba(255, 255, 255, 0.08)',
+} as const;
+
+/** Minimum comfortable touch target padding for small controls. */
+export const HitSlop = { top: 8, bottom: 8, left: 8, right: 8 } as const;
+
+export const Shadows = {
+  glow: {
+    shadowColor: Colors.cyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+  },
 } as const;
 
 // Shared glass card style object
