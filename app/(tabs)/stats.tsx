@@ -1,5 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import {
+  Alert,
+  Dimensions,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Circle, Svg, Path } from 'react-native-svg';
 
@@ -262,8 +272,20 @@ interface DayBar {
   hours: number;
 }
 
-function BarChart({ data, average }: { data: DayBar[]; average: number }) {
-  const maxHours = Math.max(...data.map((d) => d.hours), GOAL_H, 1);
+function BarChart({
+  title,
+  data,
+  average,
+  showGoal,
+  highlightLabel,
+}: {
+  title: string;
+  data: DayBar[];
+  average: number;
+  showGoal: boolean;
+  highlightLabel?: string | undefined;
+}) {
+  const maxHours = Math.max(...data.map((d) => d.hours), showGoal ? GOAL_H : 0, 1);
   const goalLineH = (GOAL_H / maxHours) * BAR_MAX_H;
 
   return (
@@ -271,11 +293,13 @@ function BarChart({ data, average }: { data: DayBar[]; average: number }) {
       {/* Header */}
       <View style={styles.cardHeader}>
         <View>
-          <Text style={styles.cardTitle}>Progression hebdomadaire</Text>
-          <View style={styles.chartSubRow}>
-            <View style={styles.legendDot} />
-            <Text style={styles.chartSub}>Objectif {GOAL_H}h / jour</Text>
-          </View>
+          <Text style={styles.cardTitle}>{title}</Text>
+          {showGoal && (
+            <View style={styles.chartSubRow}>
+              <View style={styles.legendDot} />
+              <Text style={styles.chartSub}>Objectif {GOAL_H}h / jour</Text>
+            </View>
+          )}
         </View>
         <View style={styles.avgBadge}>
           <Text style={styles.avgValue}>{average > 0 ? average.toFixed(1) : '0'}h</Text>
@@ -286,18 +310,20 @@ function BarChart({ data, average }: { data: DayBar[]; average: number }) {
       {/* Bars with goal line */}
       <View style={styles.chartArea}>
         {/* Dashed goal line */}
-        <View style={[styles.goalLine, { bottom: goalLineH + 20 }]}>
-          <View style={styles.goalLineDash} />
-          <Text style={styles.goalLineLabel}>{GOAL_H}h</Text>
-        </View>
+        {showGoal && (
+          <View style={[styles.goalLine, { bottom: goalLineH + 20 }]}>
+            <View style={styles.goalLineDash} />
+            <Text style={styles.goalLineLabel}>{GOAL_H}h</Text>
+          </View>
+        )}
 
         <View style={styles.barsRow}>
-          {data.map((d) => {
+          {data.map((d, i) => {
             const barH = Math.max((d.hours / maxHours) * BAR_MAX_H, d.hours > 0 ? 6 : 2);
-            const meetsGoal = d.hours >= GOAL_H;
-            const isToday = d.day === dayLabel(new Date());
+            const meetsGoal = showGoal && d.hours >= GOAL_H;
+            const isToday = highlightLabel !== undefined && d.day === highlightLabel;
             return (
-              <View key={d.day} style={styles.barCol}>
+              <View key={i} style={styles.barCol}>
                 {d.hours > 0 && (
                   <Text
                     style={[styles.barValueLabel, { color: meetsGoal ? C.tertiary : C.secondary }]}
@@ -503,12 +529,35 @@ export default function StatsScreen() {
   const [period, setPeriod] = useState<Period>('week');
   const [sessions, setSessions] = useState<FastSession[]>([]);
   const [recent, setRecent] = useState<FastSession[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!user) return;
-    fastSessions.findByStatus(user.id, 'completed').then(setSessions);
-    fastSessions.findRecentByUserId(user.id, 10).then(setRecent);
+    try {
+      const [completed, rec] = await Promise.all([
+        fastSessions.findByStatus(user.id, 'completed'),
+        fastSessions.findRecentByUserId(user.id, 10),
+      ]);
+      setSessions(completed);
+      setRecent(rec);
+    } catch {
+      // Keep last known data on transient DB errors
+    }
   }, [user, fastSessions]);
+
+  // Reload whenever the tab regains focus so a fast finished on the timer
+  // screen shows up immediately.
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const cutoff = cutoffMs(period);
   const filtered = sessions.filter((s) => new Date(s.startedAt).getTime() >= cutoff);
@@ -532,17 +581,69 @@ export default function StatsScreen() {
         )
       : 0;
 
-  // Weekly bars (last 7 days)
-  const weekBars: DayBar[] = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    const dateStr = isoDate(d);
-    const dayH = sessions
+  // Bars driven by the selected period
+  function hoursOnDate(dateStr: string): number {
+    return sessions
       .filter((s) => s.endedAt && isoDate(new Date(s.startedAt)) === dateStr)
       .reduce((acc, s) => acc + msToHours(durationMs(s)), 0);
-    return { day: dayLabel(d), hours: dayH };
-  });
-  const weekAvg = weekBars.reduce((a, b) => a + b.hours, 0) / 7;
+  }
+
+  function hoursBetween(startMs: number, endMs: number): number {
+    return sessions
+      .filter((s) => {
+        const t = new Date(s.startedAt).getTime();
+        return s.endedAt !== null && t >= startMs && t < endMs;
+      })
+      .reduce((acc, s) => acc + msToHours(durationMs(s)), 0);
+  }
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  let chartTitle: string;
+  let chartBars: DayBar[];
+  let chartAvg: number;
+  let chartShowGoal: boolean;
+  let chartHighlight: string | undefined;
+
+  if (period === 'week') {
+    chartTitle = 'Progression hebdomadaire';
+    chartBars = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { day: dayLabel(d), hours: hoursOnDate(isoDate(d)) };
+    });
+    chartAvg = chartBars.reduce((a, b) => a + b.hours, 0) / 7;
+    chartShowGoal = true;
+    chartHighlight = dayLabel(new Date());
+  } else if (period === 'month') {
+    chartTitle = 'Progression mensuelle';
+    const endOfToday = new Date();
+    endOfToday.setHours(24, 0, 0, 0);
+    chartBars = Array.from({ length: 4 }, (_, i) => {
+      const end = endOfToday.getTime() - (3 - i) * 7 * DAY_MS;
+      const start = end - 7 * DAY_MS;
+      const startDate = new Date(start);
+      const label = `${String(startDate.getDate()).padStart(2, '0')}/${String(
+        startDate.getMonth() + 1
+      ).padStart(2, '0')}`;
+      return { day: label, hours: hoursBetween(start, end) };
+    });
+    chartAvg = chartBars.reduce((a, b) => a + b.hours, 0) / 28;
+    chartShowGoal = false;
+  } else {
+    chartTitle = 'Progression annuelle';
+    const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    const now = new Date();
+    chartBars = Array.from({ length: 12 }, (_, i) => {
+      const start = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+      const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+      return {
+        day: monthLabels[start.getMonth()] ?? '',
+        hours: hoursBetween(start.getTime(), end.getTime()),
+      };
+    });
+    chartAvg = chartBars.reduce((a, b) => a + b.hours, 0) / 365;
+    chartShowGoal = false;
+  }
 
   // Heatmap (last 28 days)
   const heatStart = new Date();
@@ -595,6 +696,9 @@ export default function StatsScreen() {
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.cyan} />
+        }
       >
         <PeriodSelector value={period} onChange={setPeriod} />
 
@@ -604,7 +708,13 @@ export default function StatsScreen() {
 
         <LongestFastCard ms={longestMs} completionRate={completionRate} />
 
-        <BarChart data={weekBars} average={weekAvg} />
+        <BarChart
+          title={chartTitle}
+          data={chartBars}
+          average={chartAvg}
+          showGoal={chartShowGoal}
+          highlightLabel={chartHighlight}
+        />
 
         <Heatmap cells={heatCells} startDate={heatStart} />
 
@@ -612,9 +722,6 @@ export default function StatsScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Jeûnes récents</Text>
-            <Pressable hitSlop={16}>
-              <Text style={styles.seeAll}>Tout voir</Text>
-            </Pressable>
           </View>
           {recent.filter((s) => s.status === 'completed').length === 0 ? (
             <EmptyFasts />

@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Linking,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path, Circle } from 'react-native-svg';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { calculateStreak } from '@/lib/domain/fasting';
 import { useRepositories } from '@/lib/repositories/provider';
@@ -321,10 +321,15 @@ export default function ProfileScreen() {
 
   const [sessions, setSessions] = useState<FastSession[]>([]);
 
-  useEffect(() => {
-    if (!user) return;
-    fastSessions.findByStatus(user.id, 'completed').then(setSessions);
-  }, [user, fastSessions]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      fastSessions
+        .findByStatus(user.id, 'completed')
+        .then(setSessions)
+        .catch(() => {});
+    }, [user, fastSessions])
+  );
 
   const { level, xpInLevel, nextLevelName } = computeLevel(sessions);
   const streak = calculateStreak(sessions);

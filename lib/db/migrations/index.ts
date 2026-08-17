@@ -75,6 +75,13 @@ const migrations: Migration[] = [
       CREATE UNIQUE INDEX IF NOT EXISTS idx_phase_reached_unique ON phase_reached(fast_session_id, phase_id);
     `,
   },
+  {
+    version: 2,
+    name: '002_journal_water',
+    up: `
+      ALTER TABLE journal_entry ADD COLUMN water_ml INTEGER NOT NULL DEFAULT 0;
+    `,
+  },
 ];
 
 export function runMigrations(db: SQLiteDatabase): void {

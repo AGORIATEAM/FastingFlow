@@ -18,6 +18,7 @@ interface JournalEntryRow {
   energy: number;
   hunger: number;
   mental_clarity: number;
+  water_ml: number;
   text: string | null;
   created_at: string;
 }
@@ -31,6 +32,7 @@ function rowToEntry(row: JournalEntryRow): JournalEntry {
     energy: row.energy,
     hunger: row.hunger,
     mentalClarity: row.mental_clarity,
+    waterMl: row.water_ml,
     text: row.text,
     createdAt: row.created_at,
   });
@@ -79,19 +81,20 @@ export class SqliteJournalEntryRepository implements IJournalEntryRepository {
   }
 
   async create(data: CreateJournalEntry): Promise<JournalEntry> {
-    CreateJournalEntrySchema.parse(data);
+    const parsed = CreateJournalEntrySchema.parse(data);
     const now = new Date().toISOString();
     this.db.runSync(
-      `INSERT INTO journal_entry (id, user_id, fast_session_id, mood, energy, hunger, mental_clarity, text, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      data.id,
-      data.userId,
-      data.fastSessionId,
-      data.mood,
-      data.energy,
-      data.hunger,
-      data.mentalClarity,
-      data.text,
+      `INSERT INTO journal_entry (id, user_id, fast_session_id, mood, energy, hunger, mental_clarity, water_ml, text, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      parsed.id,
+      parsed.userId,
+      parsed.fastSessionId,
+      parsed.mood,
+      parsed.energy,
+      parsed.hunger,
+      parsed.mentalClarity,
+      parsed.waterMl,
+      parsed.text,
       now
     );
     const created = await this.findById(data.id);
@@ -119,6 +122,10 @@ export class SqliteJournalEntryRepository implements IJournalEntryRepository {
     if (data.mentalClarity !== undefined) {
       sets.push('mental_clarity = ?');
       values.push(data.mentalClarity);
+    }
+    if (data.waterMl !== undefined) {
+      sets.push('water_ml = ?');
+      values.push(data.waterMl);
     }
     if (data.text !== undefined) {
       sets.push('text = ?');

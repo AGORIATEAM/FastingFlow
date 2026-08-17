@@ -3,6 +3,7 @@ import {
   calculateCurrentPhase,
   calculateProgress,
   calculateStreak,
+  computeMissingPhases,
   getUpcomingPhaseIds,
 } from '@/lib/domain/fasting';
 
@@ -229,5 +230,81 @@ describe('calculateStreak', () => {
       endedAt: null,
     };
     expect(calculateStreak([session], NOW)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeMissingPhases
+// ---------------------------------------------------------------------------
+
+describe('computeMissingPhases', () => {
+  function makeActiveSession(startedAtUtc: string): FastSession {
+    return {
+      id: BASE_UUID_SESSION,
+      userId: BASE_UUID_USER,
+      protocol: '24h',
+      plannedDurationH: 24,
+      startedAt: startedAtUtc,
+      endedAt: null,
+      status: 'active',
+      notes: null,
+      createdAt: startedAtUtc,
+      updatedAt: startedAtUtc,
+    };
+  }
+
+  it('returns nothing before the first trigger (12h)', () => {
+    const session = makeActiveSession('2026-04-23T06:00:00.000Z');
+    const now = new Date('2026-04-23T17:59:00.000Z'); // 11h59 elapsed
+    expect(computeMissingPhases(session, [], now)).toEqual([]);
+  });
+
+  it('returns the crossed phases with their exact reach timestamps', () => {
+    const session = makeActiveSession('2026-04-22T12:00:00.000Z');
+    const now = new Date('2026-04-23T06:00:00.000Z'); // 18h elapsed
+    expect(computeMissingPhases(session, [], now)).toEqual([
+      { phaseId: '12h', reachedAt: '2026-04-23T00:00:00.000Z' },
+      { phaseId: '16h', reachedAt: '2026-04-23T04:00:00.000Z' },
+      { phaseId: '18h', reachedAt: '2026-04-23T06:00:00.000Z' },
+    ]);
+  });
+
+  it('excludes phases already recorded', () => {
+    const session = makeActiveSession('2026-04-22T12:00:00.000Z');
+    const now = new Date('2026-04-23T06:00:00.000Z'); // 18h elapsed
+    expect(computeMissingPhases(session, ['12h', '16h'], now)).toEqual([
+      { phaseId: '18h', reachedAt: '2026-04-23T06:00:00.000Z' },
+    ]);
+  });
+
+  it('returns nothing when every crossed phase is recorded', () => {
+    const session = makeActiveSession('2026-04-22T12:00:00.000Z');
+    const now = new Date('2026-04-23T06:00:00.000Z');
+    expect(computeMissingPhases(session, ['12h', '16h', '18h'], now)).toEqual([]);
+  });
+
+  it('catches up all 9 phases after a very long fast', () => {
+    const session = makeActiveSession('2026-04-18T12:00:00.000Z');
+    const now = new Date('2026-04-22T14:00:00.000Z'); // 98h elapsed
+    const missing = computeMissingPhases(session, [], now);
+    expect(missing.map((m) => m.phaseId)).toEqual([
+      '12h',
+      '16h',
+      '18h',
+      '24h',
+      '36h',
+      '48h',
+      '56h',
+      '72h',
+      '96h',
+    ]);
+  });
+
+  it('includes a phase at its exact trigger instant', () => {
+    const session = makeActiveSession('2026-04-23T00:00:00.000Z');
+    const now = new Date('2026-04-23T12:00:00.000Z'); // exactly 12h
+    expect(computeMissingPhases(session, [], now)).toEqual([
+      { phaseId: '12h', reachedAt: '2026-04-23T12:00:00.000Z' },
+    ]);
   });
 });

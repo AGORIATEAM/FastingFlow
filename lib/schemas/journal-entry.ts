@@ -11,6 +11,7 @@ export const JournalEntrySchema = z.object({
   energy: TenPointScale,
   hunger: TenPointScale,
   mentalClarity: TenPointScale,
+  waterMl: z.number().int().min(0),
   text: z.string().nullable(),
   createdAt: z.string().datetime(),
 });
@@ -23,6 +24,7 @@ export const CreateJournalEntrySchema = z.object({
   energy: TenPointScale,
   hunger: TenPointScale,
   mentalClarity: TenPointScale,
+  waterMl: z.number().int().min(0).default(0),
   text: z.string().nullable(),
 });
 
@@ -31,6 +33,7 @@ export const UpdateJournalEntrySchema = z.object({
   energy: TenPointScale.optional(),
   hunger: TenPointScale.optional(),
   mentalClarity: TenPointScale.optional(),
+  waterMl: z.number().int().min(0).optional(),
   text: z.string().nullable().optional(),
 });
 

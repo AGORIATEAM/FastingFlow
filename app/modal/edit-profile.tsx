@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,7 +14,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Svg, Path, Circle } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 
+import { goalToDb, parseTargetWeightKg } from '@/lib/domain/profile';
+import { useRepositories } from '@/lib/repositories/provider';
 import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
+import { useUserStore } from '@/lib/stores/useUserStore';
 
 // ─── Design tokens ──────────────────────────────────────────────────
 const C = {
@@ -80,17 +84,39 @@ export default function EditProfileModal() {
   const storedWeight = useAppSettingsStore((s) => s.targetWeightKg);
   const storedGoal = useAppSettingsStore((s) => s.primaryGoal);
   const setProfileData = useAppSettingsStore((s) => s.setProfileData);
+  const { users } = useRepositories();
+  const user = useUserStore((s) => s.user);
+  const setUser = useUserStore((s) => s.setUser);
 
   const [firstName, setFirstName] = useState(storedFirstName);
   const [weight, setWeight] = useState(storedWeight ? String(storedWeight) : '');
   const [goal, setGoal] = useState<string | null>(storedGoal);
 
   function save() {
+    const parsedWeight = parseTargetWeightKg(weight);
+    if (parsedWeight === 'invalid') {
+      Alert.alert('Poids invalide', 'Entrez un poids cible entre 30 et 300 kg.');
+      return;
+    }
+
     setProfileData({
       firstName: firstName.trim(),
-      targetWeightKg: weight ? parseFloat(weight) || null : null,
+      targetWeightKg: parsedWeight,
       primaryGoal: goal,
     });
+
+    // The canonical profile lives in the SQLite user table
+    if (user) {
+      users
+        .update(user.id, {
+          displayName: firstName.trim() || null,
+          goal: goalToDb(goal),
+        })
+        .then(setUser)
+        .catch(() => {
+          // Settings-store copy is already saved; SQLite sync retries next edit
+        });
+    }
     router.back();
   }
 

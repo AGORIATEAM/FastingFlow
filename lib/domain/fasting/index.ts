@@ -35,6 +35,27 @@ export function getUpcomingPhaseIds(elapsedHours: number): PhaseId[] {
 }
 
 /**
+ * Returns the phases a session has crossed that are not yet recorded,
+ * each with the exact timestamp at which it was reached (startedAt + trigger).
+ * Used on every tick and to catch up after the app was killed mid-fast.
+ */
+export function computeMissingPhases(
+  session: FastSession,
+  recordedPhaseIds: readonly PhaseId[],
+  now: Date = new Date()
+): { phaseId: PhaseId; reachedAt: string }[] {
+  const startedMs = new Date(session.startedAt).getTime();
+  const elapsedHours = (now.getTime() - startedMs) / 3_600_000;
+  const recorded = new Set<PhaseId>(recordedPhaseIds);
+  return PHASE_TRIGGER_HOURS.filter((h) => elapsedHours >= h)
+    .map((h) => ({
+      phaseId: `${h}h` as PhaseId,
+      reachedAt: new Date(startedMs + h * 3_600_000).toISOString(),
+    }))
+    .filter((p) => !recorded.has(p.phaseId));
+}
+
+/**
  * Returns the number of consecutive days (going backward from now) on which
  * the user completed at least one fast.
  *

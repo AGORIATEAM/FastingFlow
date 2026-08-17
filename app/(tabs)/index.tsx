@@ -1,6 +1,7 @@
 import { randomUUID } from 'expo-crypto';
-import { useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Modal,
   Pressable,
@@ -18,6 +19,7 @@ import { useRouter } from 'expo-router';
 import {
   calculateCurrentPhase,
   calculateProgress,
+  computeMissingPhases,
   getUpcomingPhaseIds,
 } from '@/lib/domain/fasting';
 import { useRepositories } from '@/lib/repositories/provider';
@@ -353,14 +355,21 @@ function StartButton({ label, onPress }: { label: string; onPress: () => void })
 
 function NoteModal({
   visible,
+  initialText,
   onClose,
   onSave,
 }: {
   visible: boolean;
+  initialText: string;
   onClose: () => void;
   onSave: (t: string) => void;
 }) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
+
+  useEffect(() => {
+    if (visible) setText(initialText);
+  }, [visible, initialText]);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.modalOverlay} onPress={onClose}>
@@ -463,30 +472,134 @@ function IdleScreen({ onStart }: { onStart: (p: Protocol) => void }) {
 // ─── Main screen ─────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const { fastSessions } = useRepositories();
+  const { fastSessions, journalEntries, phasesReached: phasesReachedRepo } = useRepositories();
   const user = useUserStore((s) => s.user);
   const activeSession = useSessionStore((s) => s.activeSession);
   const startSession = useSessionStore((s) => s.startSession);
   const endSession = useSessionStore((s) => s.endSession);
+  const setPhasesReached = useSessionStore((s) => s.setPhasesReached);
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
   const [waterMl, setWaterMl] = useState(0);
   const [moodIdx, setMoodIdx] = useState(0);
   const [note, setNote] = useState('');
   const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const journalIdRef = useRef<string | null>(null);
+  const phasesLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!user || activeSession !== null) return;
-    fastSessions.findActiveByUserId(user.id).then((session) => {
-      if (session) startSession(session);
-    });
+    fastSessions
+      .findActiveByUserId(user.id)
+      .then((session) => {
+        if (session) startSession(session);
+      })
+      .catch(() => {
+        // Non-blocking: the idle screen still works without a resumed session
+      });
   }, [user, activeSession, fastSessions, startSession]);
+
+  // Restore the session's journal entry and phase history, then record any
+  // phase crossed while the app was killed (catch-up).
+  useEffect(() => {
+    if (!activeSession || !user) return;
+    let cancelled = false;
+    phasesLoadedRef.current = false;
+
+    journalEntries
+      .findByFastSessionId(activeSession.id)
+      .then((entries) => {
+        if (cancelled) return;
+        const entry = entries[0];
+        journalIdRef.current = entry?.id ?? null;
+        setWaterMl(entry?.waterMl ?? 0);
+        setMoodIdx(entry ? entry.mood - 1 : 0);
+        setNote(entry?.text ?? '');
+      })
+      .catch(() => {});
+
+    phasesReachedRepo
+      .findByFastSessionId(activeSession.id)
+      .then(async (rows) => {
+        if (cancelled) return;
+        setPhasesReached(rows);
+        phasesLoadedRef.current = true;
+        const missing = computeMissingPhases(
+          activeSession,
+          rows.map((r) => r.phaseId)
+        );
+        for (const m of missing) {
+          const created = await phasesReachedRepo.create({
+            id: randomUUID(),
+            userId: activeSession.userId,
+            fastSessionId: activeSession.id,
+            phaseId: m.phaseId,
+            reachedAt: m.reachedAt,
+          });
+          if (!cancelled) useSessionStore.getState().addPhaseReached(created);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSession, user, journalEntries, phasesReachedRepo, setPhasesReached]);
 
   useEffect(() => {
     if (!activeSession) return;
-    const id = setInterval(forceUpdate, 1000);
+    const id = setInterval(() => {
+      forceUpdate();
+      if (!phasesLoadedRef.current) return;
+      const { activeSession: current, phasesReached: reached } = useSessionStore.getState();
+      if (!current) return;
+      const missing = computeMissingPhases(
+        current,
+        reached.map((p) => p.phaseId)
+      );
+      for (const m of missing) {
+        phasesReachedRepo
+          .create({
+            id: randomUUID(),
+            userId: current.userId,
+            fastSessionId: current.id,
+            phaseId: m.phaseId,
+            reachedAt: m.reachedAt,
+          })
+          .then((created) => useSessionStore.getState().addPhaseReached(created))
+          .catch(() => {});
+      }
+    }, 1000);
     return () => clearInterval(id);
-  }, [activeSession, forceUpdate]);
+  }, [activeSession, forceUpdate, phasesReachedRepo]);
+
+  // Single journal entry per session, created lazily on first interaction.
+  const upsertJournal = useCallback(
+    async (patch: { waterMl?: number; mood?: number; text?: string | null }) => {
+      if (!user || !activeSession) return;
+      try {
+        if (journalIdRef.current) {
+          await journalEntries.update(journalIdRef.current, patch);
+        } else {
+          const created = await journalEntries.create({
+            id: randomUUID(),
+            userId: user.id,
+            fastSessionId: activeSession.id,
+            mood: patch.mood ?? moodIdx + 1,
+            energy: 5,
+            hunger: 5,
+            mentalClarity: 5,
+            waterMl: patch.waterMl ?? waterMl,
+            text: patch.text !== undefined ? patch.text : note || null,
+          });
+          journalIdRef.current = created.id;
+        }
+      } catch {
+        // Journal writes must never break the timer
+      }
+    },
+    [user, activeSession, journalEntries, moodIdx, waterMl, note]
+  );
 
   const elapsedMs = activeSession ? Date.now() - new Date(activeSession.startedAt).getTime() : 0;
   const elapsedHours = elapsedMs / 3600000;
@@ -501,27 +614,43 @@ export default function HomeScreen() {
 
   async function handleStart(protocol: Protocol) {
     if (!user) return;
-    const now = new Date().toISOString();
-    const session = await fastSessions.create({
-      id: randomUUID(),
-      userId: user.id,
-      protocol,
-      plannedDurationH: effectiveDurationH(protocol, freeDurationH),
-      startedAt: now,
-      endedAt: null,
-      status: 'active',
-      notes: null,
-    });
-    startSession(session);
+    try {
+      const now = new Date().toISOString();
+      const session = await fastSessions.create({
+        id: randomUUID(),
+        userId: user.id,
+        protocol,
+        plannedDurationH: effectiveDurationH(protocol, freeDurationH),
+        startedAt: now,
+        endedAt: null,
+        status: 'active',
+        notes: null,
+      });
+      journalIdRef.current = null;
+      setWaterMl(0);
+      setMoodIdx(0);
+      setNote('');
+      startSession(session);
+    } catch {
+      Alert.alert('Erreur', 'Impossible de démarrer le jeûne. Veuillez réessayer.');
+    }
   }
 
   async function handleStop() {
     if (!activeSession) return;
-    await fastSessions.update(activeSession.id, {
-      endedAt: new Date().toISOString(),
-      status: 'completed',
-    });
-    endSession();
+    try {
+      await fastSessions.update(activeSession.id, {
+        endedAt: new Date().toISOString(),
+        status: 'completed',
+      });
+      journalIdRef.current = null;
+      setWaterMl(0);
+      setMoodIdx(0);
+      setNote('');
+      endSession();
+    } catch {
+      Alert.alert('Erreur', "Impossible d'arrêter le jeûne. Veuillez réessayer.");
+    }
   }
 
   return (
@@ -596,7 +725,11 @@ export default function HomeScreen() {
               }
               btnLabel="+250ml"
               btnColor={C.secondary}
-              onPress={() => setWaterMl((v) => v + 250)}
+              onPress={() => {
+                const next = waterMl + 250;
+                setWaterMl(next);
+                void upsertJournal({ waterMl: next });
+              }}
             />
             <QuickCard
               icon={<MoodIcon color={C.tertiary} />}
@@ -604,7 +737,11 @@ export default function HomeScreen() {
               value={MOODS[moodIdx] ?? 'Stable'}
               btnLabel="Changer"
               btnColor={C.tertiary}
-              onPress={() => setMoodIdx((i) => (i + 1) % MOODS.length)}
+              onPress={() => {
+                const nextIdx = (moodIdx + 1) % MOODS.length;
+                setMoodIdx(nextIdx);
+                void upsertJournal({ mood: nextIdx + 1 });
+              }}
             />
             <QuickCard
               icon={<NoteIcon color={C.onPrimaryContainer} />}
@@ -649,7 +786,15 @@ export default function HomeScreen() {
         <IdleScreen onStart={handleStart} />
       )}
 
-      <NoteModal visible={noteModalOpen} onClose={() => setNoteModalOpen(false)} onSave={setNote} />
+      <NoteModal
+        visible={noteModalOpen}
+        initialText={note}
+        onClose={() => setNoteModalOpen(false)}
+        onSave={(t) => {
+          setNote(t);
+          void upsertJournal({ text: t || null });
+        }}
+      />
     </SafeAreaView>
   );
 }
