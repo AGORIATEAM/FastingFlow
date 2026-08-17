@@ -22,6 +22,11 @@ import {
   computeMissingPhases,
   getUpcomingPhaseIds,
 } from '@/lib/domain/fasting';
+import {
+  cancelScheduledNotifications,
+  requestNotificationPermissions,
+  scheduleForSession,
+} from '@/lib/notifications';
 import { useRepositories } from '@/lib/repositories/provider';
 import { PROTOCOL_DURATION_H, type Protocol } from '@/lib/schemas';
 import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
@@ -631,6 +636,12 @@ export default function HomeScreen() {
       setMoodIdx(0);
       setNote('');
       startSession(session);
+
+      if (useAppSettingsStore.getState().notificationsEnabled) {
+        void requestNotificationPermissions()
+          .then((granted) => (granted ? scheduleForSession(session) : undefined))
+          .catch(() => {});
+      }
     } catch {
       Alert.alert('Erreur', 'Impossible de démarrer le jeûne. Veuillez réessayer.');
     }
@@ -648,6 +659,7 @@ export default function HomeScreen() {
       setMoodIdx(0);
       setNote('');
       endSession();
+      void cancelScheduledNotifications().catch(() => {});
     } catch {
       Alert.alert('Erreur', "Impossible d'arrêter le jeûne. Veuillez réessayer.");
     }

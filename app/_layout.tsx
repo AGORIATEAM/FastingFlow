@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { bootstrapUser } from '@/lib/auth';
+import { configureNotificationHandler } from '@/lib/notifications';
 import { RepositoriesProvider, useRepositories } from '@/lib/repositories/provider';
 import { useUserStore } from '@/lib/stores/useUserStore';
 import { initI18n } from '@/utils/i18n';
@@ -15,6 +16,7 @@ import SplashContent from '@/components/SplashContent';
 
 SplashScreen.preventAutoHideAsync();
 initI18n();
+configureNotificationHandler();
 
 // Surface uncaught render errors with expo-router's built-in boundary UI
 export { ErrorBoundary } from 'expo-router';

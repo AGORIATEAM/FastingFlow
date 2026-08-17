@@ -15,6 +15,11 @@ import { Svg, Path, Circle } from 'react-native-svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { calculateStreak } from '@/lib/domain/fasting';
+import {
+  cancelScheduledNotifications,
+  requestNotificationPermissions,
+  scheduleForSession,
+} from '@/lib/notifications';
 import { useRepositories } from '@/lib/repositories/provider';
 import type { FastSession } from '@/lib/schemas';
 import { useAppSettingsStore } from '@/lib/stores/useAppSettingsStore';
@@ -338,6 +343,26 @@ export default function ProfileScreen() {
   const displayName = firstName.trim() || (user?.isGuest ? 'Invité' : 'Utilisateur');
   const membership = user?.isGuest ? 'Mode Invité' : 'Compte FastLife';
 
+  async function handleToggleNotifications(next: boolean) {
+    if (!next) {
+      setNotificationsEnabled(false);
+      void cancelScheduledNotifications().catch(() => {});
+      return;
+    }
+    const granted = await requestNotificationPermissions();
+    if (!granted) {
+      setNotificationsEnabled(false);
+      Alert.alert(
+        'Notifications désactivées',
+        'Autorisez les notifications dans Réglages > FastLife pour recevoir les alertes de phase.'
+      );
+      return;
+    }
+    setNotificationsEnabled(true);
+    const current = useSessionStore.getState().activeSession;
+    if (current) void scheduleForSession(current).catch(() => {});
+  }
+
   function handleLogout() {
     Alert.alert('Se déconnecter', 'Voulez-vous vraiment vous déconnecter ?', [
       { text: 'Annuler', style: 'cancel' },
@@ -459,15 +484,16 @@ export default function ProfileScreen() {
               icon={<BellIcon color="#fbbf24" />}
               iconBg="rgba(251,191,36,0.14)"
               label="Notifications"
+              sublabel="Phases métaboliques et fin de jeûne"
               rightElement={
                 <Switch
                   value={notificationsEnabled}
-                  onValueChange={setNotificationsEnabled}
+                  onValueChange={(v) => void handleToggleNotifications(v)}
                   trackColor={{ false: C.surface, true: `${C.secondaryContainer}80` }}
                   thumbColor={notificationsEnabled ? C.secondary : C.outline}
                 />
               }
-              onPress={() => setNotificationsEnabled(!notificationsEnabled)}
+              onPress={() => void handleToggleNotifications(!notificationsEnabled)}
               chevron={false}
             />
             <SettingsRow

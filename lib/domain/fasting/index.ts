@@ -55,6 +55,45 @@ export function computeMissingPhases(
     .filter((p) => !recorded.has(p.phaseId));
 }
 
+export interface NotificationTrigger {
+  kind: 'phase' | 'end';
+  phaseId: PhaseId | null;
+  date: Date;
+}
+
+/**
+ * Plans the local notifications for a session: one per metabolic phase that
+ * will be crossed before the planned end (free protocol: all phases), plus a
+ * completion notification at plannedDurationH. Triggers already in the past
+ * are dropped. Sorted by date ascending.
+ */
+export function planNotificationTriggers(
+  session: FastSession,
+  now: Date = new Date()
+): NotificationTrigger[] {
+  const startedMs = new Date(session.startedAt).getTime();
+  const nowMs = now.getTime();
+  const planned = session.plannedDurationH;
+  const triggers: NotificationTrigger[] = [];
+
+  for (const h of PHASE_TRIGGER_HOURS) {
+    if (planned > 0 && h >= planned) continue;
+    const t = startedMs + h * 3_600_000;
+    if (t > nowMs) {
+      triggers.push({ kind: 'phase', phaseId: `${h}h` as PhaseId, date: new Date(t) });
+    }
+  }
+
+  if (planned > 0) {
+    const endMs = startedMs + planned * 3_600_000;
+    if (endMs > nowMs) {
+      triggers.push({ kind: 'end', phaseId: null, date: new Date(endMs) });
+    }
+  }
+
+  return triggers.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
 /**
  * Returns the number of consecutive days (going backward from now) on which
  * the user completed at least one fast.
