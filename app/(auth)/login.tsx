@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -10,30 +12,57 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-// ─── Design tokens ─────────────────────────────────────────────────
-const C = {
-  bg: '#050F1D',
-  glass: 'rgba(13, 37, 71, 0.55)',
-  glassBorder: 'rgba(245, 247, 250, 0.10)',
-  cyan: '#3DB4F2',
-  secondary: '#84cfff',
-  secondaryContainer: '#009ad7',
-  tertiary: '#45dfa4',
-  onSurface: '#e4e2e5',
-  onSurfaceVariant: '#c5c6ce',
-  outline: '#8e9098',
-  inputBg: 'rgba(5, 15, 29, 0.7)',
-  inputBorder: 'rgba(255,255,255,0.08)',
-  white: '#ffffff',
-};
+import { GhostButton, GlassCard, PressableScale, PrimaryButton, Screen } from '@/components/ui';
+import { sendPasswordReset, signInWithEmail, signUpWithEmail } from '@/lib/auth/account';
+import { haptics } from '@/lib/haptics';
+import { useRepositories } from '@/lib/repositories/provider';
+import { useUserStore } from '@/lib/stores/useUserStore';
+import { isAuthConfigured } from '@/lib/supabase';
+import { Colors, Fonts, Radius, Spacing, TextStyles, Typography } from '@/lib/theme';
 
-// ─── SVG Icons ─────────────────────────────────────────────────────
+// ─── Validation ─────────────────────────────────────────────────────
 
-function FlameIcon({ size = 22, color = C.secondary }: { size?: number; color?: string }) {
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
+const ERR_REQUIRED = 'Ce champ est requis.';
+const ERR_EMAIL = 'Adresse email invalide.';
+const ERR_PASSWORD = 'Le mot de passe doit contenir au moins 6 caractères.';
+const ERR_CONFIRM = 'Les mots de passe ne correspondent pas.';
+const ERR_GENERIC = 'Une erreur est survenue. Veuillez réessayer.';
+
+type AuthTab = 'login' | 'signup';
+
+interface FieldErrors {
+  email?: string;
+  password?: string;
+  confirm?: string;
+}
+
+function validateFields(
+  tab: AuthTab,
+  email: string,
+  password: string,
+  confirm: string
+): FieldErrors {
+  const errors: FieldErrors = {};
+  const trimmedEmail = email.trim();
+  if (trimmedEmail.length === 0) errors.email = ERR_REQUIRED;
+  else if (!EMAIL_RE.test(trimmedEmail)) errors.email = ERR_EMAIL;
+  if (password.length === 0) errors.password = ERR_REQUIRED;
+  else if (password.length < 6) errors.password = ERR_PASSWORD;
+  if (tab === 'signup') {
+    if (confirm.length === 0) errors.confirm = ERR_REQUIRED;
+    else if (confirm !== password) errors.confirm = ERR_CONFIRM;
+  }
+  return errors;
+}
+
+// ─── SVG icons ──────────────────────────────────────────────────────
+
+function FlameIcon({ size = 22, color = Colors.secondary }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -45,7 +74,7 @@ function FlameIcon({ size = 22, color = C.secondary }: { size?: number; color?: 
 }
 
 function MailIcon({ focused }: { focused: boolean }) {
-  const color = focused ? C.cyan : `${C.onSurfaceVariant}60`;
+  const color = focused ? Colors.cyan : Colors.mutedText;
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -67,7 +96,7 @@ function MailIcon({ focused }: { focused: boolean }) {
 }
 
 function LockIcon({ focused }: { focused: boolean }) {
-  const color = focused ? C.cyan : `${C.onSurfaceVariant}60`;
+  const color = focused ? Colors.cyan : Colors.mutedText;
   return (
     <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
       <Path
@@ -88,22 +117,7 @@ function LockIcon({ focused }: { focused: boolean }) {
   );
 }
 
-function UserIcon({ focused }: { focused: boolean }) {
-  const color = focused ? C.cyan : `${C.onSurfaceVariant}60`;
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-      <Circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.5" />
-      <Path
-        d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
-
-function EyeIcon({ show, color = C.outline }: { show: boolean; color?: string }) {
+function EyeIcon({ show, color = Colors.outline }: { show: boolean; color?: string }) {
   if (show) {
     return (
       <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
@@ -129,55 +143,25 @@ function EyeIcon({ show, color = C.outline }: { show: boolean; color?: string })
   );
 }
 
-function GoogleIcon() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24">
-      <Path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        fill="#4285F4"
-      />
-      <Path
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        fill="#34A853"
-      />
-      <Path
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-        fill="#FBBC05"
-      />
-      <Path
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        fill="#EA4335"
-      />
-    </Svg>
-  );
-}
+// ─── Input field ────────────────────────────────────────────────────
 
-function AppleIcon() {
-  return (
-    <Svg width={18} height={18} viewBox="0 0 24 24" fill="black">
-      <Path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.54 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-    </Svg>
-  );
-}
-
-// ─── Input field ─────────────────────────────────────────────────────
-
-interface InputProps {
+interface InputFieldProps {
   fieldId: string;
   label: string;
   placeholder: string;
   value: string;
   onChangeText: (v: string) => void;
-  secure?: boolean;
-  showSecure?: boolean;
-  onToggleSecure?: () => void;
-  icon: (focused: boolean) => React.ReactNode;
-  rightLabel?: React.ReactNode;
+  error?: string | undefined;
+  secure?: boolean | undefined;
+  showSecure?: boolean | undefined;
+  onToggleSecure?: (() => void) | undefined;
+  icon: (focused: boolean) => ReactNode;
+  rightLabel?: ReactNode;
   focusedField: string | null;
   onFocus: (id: string) => void;
   onBlur: () => void;
-  keyboardType?: 'default' | 'email-address';
-  textContentType?: 'emailAddress' | 'password' | 'newPassword' | 'name' | 'none';
+  keyboardType?: 'default' | 'email-address' | undefined;
+  textContentType?: 'emailAddress' | 'password' | 'newPassword' | undefined;
 }
 
 function InputField({
@@ -186,6 +170,7 @@ function InputField({
   placeholder,
   value,
   onChangeText,
+  error,
   secure,
   showSecure,
   onToggleSecure,
@@ -195,8 +180,8 @@ function InputField({
   onFocus,
   onBlur,
   keyboardType = 'default',
-  textContentType = 'none',
-}: InputProps) {
+  textContentType,
+}: InputFieldProps) {
   const focused = focusedField === fieldId;
   return (
     <View style={styles.inputGroup}>
@@ -204,15 +189,21 @@ function InputField({
         <Text style={[styles.label, focused && styles.labelFocused]}>{label}</Text>
         {rightLabel}
       </View>
-      <View style={[styles.inputWrapper, focused && styles.inputWrapperFocused]}>
+      <View
+        style={[
+          styles.inputWrapper,
+          focused && styles.inputWrapperFocused,
+          error !== undefined && styles.inputWrapperError,
+        ]}
+      >
         <View style={styles.inputIconBox}>{icon(focused)}</View>
         <TextInput
           style={styles.input}
           placeholder={placeholder}
-          placeholderTextColor={`${C.onSurfaceVariant}40`}
+          placeholderTextColor={Colors.mutedText}
           value={value}
           onChangeText={onChangeText}
-          secureTextEntry={secure && !showSecure}
+          secureTextEntry={secure === true && showSecure !== true}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType={keyboardType}
@@ -222,71 +213,227 @@ function InputField({
           onBlur={onBlur}
           accessibilityLabel={label}
         />
-        {secure && onToggleSecure && (
+        {secure === true && onToggleSecure !== undefined && (
           <Pressable
             onPress={onToggleSecure}
             hitSlop={12}
-            accessibilityLabel={showSecure ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            accessibilityRole="button"
+            accessibilityLabel={
+              showSecure === true ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+            }
           >
-            <EyeIcon show={showSecure ?? false} color={focused ? C.cyan : C.outline} />
+            <EyeIcon show={showSecure === true} color={focused ? Colors.cyan : Colors.outline} />
           </Pressable>
         )}
       </View>
+      {error !== undefined && (
+        <Text style={styles.fieldError} accessibilityLiveRegion="polite">
+          {error}
+        </Text>
+      )}
     </View>
   );
 }
 
-// ─── Main screen ─────────────────────────────────────────────────────
+// ─── Forgot-password sheet ──────────────────────────────────────────
 
-type AuthTab = 'login' | 'signup';
+type ResetStatus = 'idle' | 'sending' | 'sent';
+
+interface ResetSheetProps {
+  visible: boolean;
+  initialEmail: string;
+  onClose: () => void;
+}
+
+function ResetSheet({ visible, initialEmail, onClose }: ResetSheetProps) {
+  const [email, setEmail] = useState(initialEmail);
+  const [status, setStatus] = useState<ResetStatus>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+
+  function handleShow(): void {
+    setEmail(initialEmail);
+    setStatus('idle');
+    setError(null);
+  }
+
+  async function handleSend(): Promise<void> {
+    const trimmed = email.trim();
+    if (!EMAIL_RE.test(trimmed)) {
+      setError(ERR_EMAIL);
+      return;
+    }
+    setError(null);
+    setStatus('sending');
+    const result = await sendPasswordReset(trimmed);
+    if (result.ok) {
+      haptics.success();
+      setStatus('sent');
+    } else {
+      haptics.warning();
+      setStatus('idle');
+      setError(result.error ?? ERR_GENERIC);
+    }
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      onShow={handleShow}
+    >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <Pressable
+          style={styles.sheetOverlay}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Fermer"
+        >
+          <View style={styles.sheet} onStartShouldSetResponder={() => true}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Mot de passe oublié</Text>
+            {status === 'sent' ? (
+              <>
+                <Text style={styles.sheetConfirmation} accessibilityLiveRegion="polite">
+                  Email envoyé si un compte existe.
+                </Text>
+                <GhostButton label="Fermer" onPress={onClose} />
+              </>
+            ) : (
+              <>
+                <Text style={styles.sheetSubtitle}>
+                  Recevez un lien de réinitialisation par email.
+                </Text>
+                <View style={[styles.inputWrapper, focused && styles.inputWrapperFocused]}>
+                  <View style={styles.inputIconBox}>
+                    <MailIcon focused={focused} />
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="nom@exemple.com"
+                    placeholderTextColor={Colors.mutedText}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    keyboardAppearance="dark"
+                    textContentType="emailAddress"
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    accessibilityLabel="Adresse email"
+                  />
+                </View>
+                {error !== null && (
+                  <Text style={styles.fieldError} accessibilityLiveRegion="polite">
+                    {error}
+                  </Text>
+                )}
+                {status === 'sending' ? (
+                  <View style={styles.sheetSpinner}>
+                    <ActivityIndicator color={Colors.cyan} size="small" />
+                  </View>
+                ) : (
+                  <PrimaryButton label="Envoyer le lien" onPress={handleSend} />
+                )}
+              </>
+            )}
+          </View>
+        </Pressable>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+// ─── Main screen ────────────────────────────────────────────────────
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { users } = useRepositories();
+  const user = useUserStore((s) => s.user);
+  const setUser = useUserStore((s) => s.setUser);
+
   const [tab, setTab] = useState<AuthTab>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [ctaPressed, setCtaPressed] = useState(false);
-  const [applePressed, setApplePressed] = useState(false);
-  const [googlePressed, setGooglePressed] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [banner, setBanner] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resetVisible, setResetVisible] = useState(false);
 
-  function handleSubmit() {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 700);
+  const authConfigured = isAuthConfigured();
+
+  function continueAsGuest(): void {
+    router.replace('/(tabs)');
   }
 
-  function handleTabSwitch(t: AuthTab) {
-    setTab(t);
-    setFocusedField(null);
+  function handleTabSwitch(next: AuthTab): void {
+    if (next === tab) return;
+    haptics.selection();
+    setTab(next);
+    setFieldErrors({});
+    setBanner(null);
     setShowPassword(false);
     setShowConfirm(false);
+    setFocusedField(null);
   }
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      {/* Centered brand header */}
-      <View style={styles.header}>
-        <View style={styles.headerInner}>
-          <FlameIcon size={16} color={C.cyan} />
-          <Text style={styles.headerBrand}>FastLife</Text>
-        </View>
-      </View>
+  async function handleSubmit(): Promise<void> {
+    if (isSubmitting) return;
+    setBanner(null);
+    const errors = validateFields(tab, email, password, confirm);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      haptics.warning();
+      return;
+    }
+    if (user === null) {
+      // Theoretical case: the guest user is bootstrapped before this screen.
+      setBanner(ERR_GENERIC);
+      haptics.warning();
+      return;
+    }
+    setIsSubmitting(true);
+    const trimmedEmail = email.trim().toLowerCase();
+    const result =
+      tab === 'login'
+        ? await signInWithEmail(users, user, trimmedEmail, password)
+        : await signUpWithEmail(users, user, trimmedEmail, password);
+    setIsSubmitting(false);
+    if (result.ok) {
+      setUser(result.user);
+      haptics.success();
+      router.replace('/(tabs)');
+    } else {
+      setBanner(result.error);
+      haptics.warning();
+    }
+  }
 
+  const heroTitle = tab === 'login' ? 'Bon retour' : 'Créer un compte';
+  const heroSubtitle =
+    tab === 'login'
+      ? 'Reprenez là où vous en étiez'
+      : 'Sauvegardez vos données de jeûne en toute sécurité';
+  const ctaLabel = tab === 'login' ? 'Se connecter' : 'Créer mon compte';
+
+  return (
+    <Screen>
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
       >
         <ScrollView
-          style={{ flex: 1 }}
+          style={styles.flex}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -298,390 +445,388 @@ export default function LoginScreen() {
           {/* Hero */}
           <View style={styles.hero}>
             <View style={styles.monogram}>
-              <FlameIcon size={26} color={C.cyan} />
+              <FlameIcon size={26} color={Colors.cyan} />
             </View>
-            <Text style={styles.heroTitle}>{tab === 'login' ? 'Bon retour' : 'Commencer'}</Text>
-            <Text style={styles.heroSubtitle}>
-              {tab === 'login'
-                ? 'Reprenez là où vous en étiez'
-                : 'Rejoignez des milliers de pratiquants'}
-            </Text>
+            <Text style={styles.heroTitle}>{heroTitle}</Text>
+            <Text style={styles.heroSubtitle}>{heroSubtitle}</Text>
           </View>
 
-          {/* Auth card */}
-          <View style={styles.card}>
-            {/* Pill tab selector */}
-            <View style={styles.tabContainer}>
-              {(['login', 'signup'] as AuthTab[]).map((t) => {
-                const active = tab === t;
-                return (
-                  <Pressable
-                    key={t}
-                    style={[styles.tabPill, active && styles.tabPillActive]}
-                    onPress={() => handleTabSwitch(t)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: active }}
-                  >
-                    <Text style={[styles.tabPillText, active && styles.tabPillTextActive]}>
-                      {t === 'login' ? 'Se connecter' : "S'inscrire"}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+          {authConfigured ? (
+            <GlassCard style={styles.card} padded={false}>
+              {/* Pill tab selector */}
+              <View style={styles.tabContainer} accessibilityRole="tablist">
+                {(['login', 'signup'] as const).map((t) => {
+                  const active = tab === t;
+                  return (
+                    <Pressable
+                      key={t}
+                      style={[styles.tabPill, active && styles.tabPillActive]}
+                      onPress={() => handleTabSwitch(t)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: active }}
+                    >
+                      <Text style={[styles.tabPillText, active && styles.tabPillTextActive]}>
+                        {t === 'login' ? 'Connexion' : 'Inscription'}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
 
-            {/* Form fields */}
-            <View style={styles.form}>
-              {tab === 'signup' && (
+              {/* Error banner */}
+              {banner !== null && (
+                <GlassCard style={styles.errorBanner}>
+                  <Text
+                    style={styles.errorBannerText}
+                    accessibilityRole="alert"
+                    accessibilityLiveRegion="polite"
+                  >
+                    {banner}
+                  </Text>
+                </GlassCard>
+              )}
+
+              {/* Form */}
+              <View style={styles.form}>
                 <InputField
-                  fieldId="name"
-                  label="Nom complet"
-                  placeholder="Jean Dupont"
-                  value={name}
-                  onChangeText={setName}
-                  icon={(f) => <UserIcon focused={f} />}
+                  fieldId="email"
+                  label="Adresse email"
+                  placeholder="nom@exemple.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  error={fieldErrors.email}
+                  keyboardType="email-address"
+                  icon={(f) => <MailIcon focused={f} />}
                   focusedField={focusedField}
                   onFocus={setFocusedField}
                   onBlur={() => setFocusedField(null)}
-                  textContentType="name"
+                  textContentType="emailAddress"
                 />
-              )}
 
-              <InputField
-                fieldId="email"
-                label="Adresse e-mail"
-                placeholder="nom@exemple.com"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                icon={(f) => <MailIcon focused={f} />}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField(null)}
-                textContentType="emailAddress"
-              />
-
-              <InputField
-                fieldId="password"
-                label="Mot de passe"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secure
-                showSecure={showPassword}
-                onToggleSecure={() => setShowPassword((v) => !v)}
-                icon={(f) => <LockIcon focused={f} />}
-                focusedField={focusedField}
-                onFocus={setFocusedField}
-                onBlur={() => setFocusedField(null)}
-                textContentType={tab === 'signup' ? 'newPassword' : 'password'}
-                rightLabel={
-                  tab === 'login' ? (
-                    <Pressable hitSlop={12} accessibilityLabel="Réinitialiser le mot de passe">
-                      <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
-                    </Pressable>
-                  ) : undefined
-                }
-              />
-
-              {tab === 'signup' && (
                 <InputField
-                  fieldId="confirm"
-                  label="Confirmer le mot de passe"
-                  placeholder="••••••••"
-                  value={confirm}
-                  onChangeText={setConfirm}
+                  fieldId="password"
+                  label="Mot de passe"
+                  placeholder="6 caractères minimum"
+                  value={password}
+                  onChangeText={setPassword}
+                  error={fieldErrors.password}
                   secure
-                  showSecure={showConfirm}
-                  onToggleSecure={() => setShowConfirm((v) => !v)}
+                  showSecure={showPassword}
+                  onToggleSecure={() => setShowPassword((v) => !v)}
                   icon={(f) => <LockIcon focused={f} />}
                   focusedField={focusedField}
                   onFocus={setFocusedField}
                   onBlur={() => setFocusedField(null)}
-                  textContentType="newPassword"
+                  textContentType={tab === 'signup' ? 'newPassword' : 'password'}
+                  rightLabel={
+                    tab === 'login' ? (
+                      <Pressable
+                        hitSlop={12}
+                        onPress={() => setResetVisible(true)}
+                        accessibilityRole="button"
+                        accessibilityLabel="Réinitialiser le mot de passe"
+                      >
+                        <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+                      </Pressable>
+                    ) : undefined
+                  }
                 />
-              )}
 
-              {/* Primary CTA */}
-              <Pressable
-                style={[styles.ctaButton, (ctaPressed || isLoading) && styles.ctaButtonPressed]}
-                onPress={handleSubmit}
-                onPressIn={() => setCtaPressed(true)}
-                onPressOut={() => setCtaPressed(false)}
-                disabled={isLoading}
-                accessibilityRole="button"
-                accessibilityLabel={tab === 'login' ? 'Se connecter' : 'Créer mon compte'}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="#001e2e" size="small" />
-                ) : (
-                  <Text style={styles.ctaText}>
-                    {tab === 'login' ? 'Se connecter' : 'Créer mon compte'}
-                  </Text>
+                {tab === 'signup' && (
+                  <InputField
+                    fieldId="confirm"
+                    label="Confirmer le mot de passe"
+                    placeholder="Retapez votre mot de passe"
+                    value={confirm}
+                    onChangeText={setConfirm}
+                    error={fieldErrors.confirm}
+                    secure
+                    showSecure={showConfirm}
+                    onToggleSecure={() => setShowConfirm((v) => !v)}
+                    icon={(f) => <LockIcon focused={f} />}
+                    focusedField={focusedField}
+                    onFocus={setFocusedField}
+                    onBlur={() => setFocusedField(null)}
+                    textContentType="newPassword"
+                  />
                 )}
-              </Pressable>
-            </View>
 
-            {/* OR divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>ou continuer avec</Text>
-              <View style={styles.dividerLine} />
-            </View>
+                {/* Primary CTA */}
+                <PressableScale
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                  accessibilityLabel={ctaLabel}
+                  accessibilityState={{ busy: isSubmitting }}
+                  style={[styles.cta, isSubmitting && styles.ctaDisabled]}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color={Colors.bg} size="small" />
+                  ) : (
+                    <Text style={styles.ctaText}>{ctaLabel}</Text>
+                  )}
+                </PressableScale>
+              </View>
+            </GlassCard>
+          ) : (
+            <GlassCard style={styles.card}>
+              <Text style={styles.unavailableTitle}>Bientôt disponible</Text>
+              <Text style={styles.unavailableText}>
+                La création de compte sera bientôt disponible. Vos données restent enregistrées sur
+                cet appareil.
+              </Text>
+            </GlassCard>
+          )}
 
-            {/* Social auth */}
-            <View style={styles.socialButtons}>
-              <Pressable
-                style={[styles.socialBtn, styles.appleBtn, applePressed && styles.socialBtnPressed]}
-                onPressIn={() => setApplePressed(true)}
-                onPressOut={() => setApplePressed(false)}
-                accessibilityLabel="Continuer avec Apple"
-                accessibilityRole="button"
-              >
-                <AppleIcon />
-                <Text style={styles.appleBtnText}>Continuer avec Apple</Text>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  styles.socialBtn,
-                  styles.googleBtn,
-                  googlePressed && styles.googleBtnPressed,
-                ]}
-                onPressIn={() => setGooglePressed(true)}
-                onPressOut={() => setGooglePressed(false)}
-                accessibilityLabel="Continuer avec Google"
-                accessibilityRole="button"
-              >
-                <GoogleIcon />
-                <Text style={styles.googleBtnText}>Continuer avec Google</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Legal */}
-          <Text style={styles.legal}>
-            En continuant, vous acceptez nos{' '}
-            <Text style={styles.legalLink}>Conditions d'utilisation</Text> et notre{' '}
-            <Text style={styles.legalLink}>Politique de confidentialité</Text>.
-          </Text>
+          {/* Guest access — always available */}
+          <GhostButton
+            label="Continuer en invité"
+            onPress={continueAsGuest}
+            style={styles.guestBtn}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+
+      <ResetSheet
+        visible={resetVisible}
+        initialEmail={email}
+        onClose={() => setResetVisible(false)}
+      />
+    </Screen>
   );
 }
 
 // ─── Styles ─────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: C.bg },
-
-  // Header — centered minimal brand
-  header: {
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.07)',
-  },
-  headerInner: { flexDirection: 'row', alignItems: 'center', gap: 7 },
-  headerBrand: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3, color: C.white },
+  flex: { flex: 1 },
 
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 32,
-    paddingBottom: 40,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xxl + Spacing.sm,
     alignItems: 'center',
   },
 
   // Ambient blobs
-  blob: { position: 'absolute', borderRadius: 999 },
+  blob: { position: 'absolute', borderRadius: Radius.full },
   blobTopLeft: {
     top: '5%',
     left: -100,
     width: 260,
     height: 260,
-    backgroundColor: 'rgba(0,154,215,0.07)',
+    backgroundColor: `${Colors.secondaryContainer}12`,
   },
   blobBottomRight: {
     bottom: '8%',
     right: -80,
     width: 240,
     height: 240,
-    backgroundColor: 'rgba(69,223,164,0.05)',
+    backgroundColor: `${Colors.tertiary}0D`,
   },
 
   // Hero
-  hero: { alignItems: 'center', marginBottom: 28, width: '100%', gap: 8 },
+  hero: { alignItems: 'center', marginBottom: Spacing.xl, width: '100%', gap: Spacing.sm },
   monogram: {
     width: 60,
     height: 60,
-    borderRadius: 20,
-    backgroundColor: 'rgba(61,180,242,0.10)',
+    borderRadius: Radius.lg,
+    backgroundColor: `${Colors.cyan}1A`,
     borderWidth: 1,
-    borderColor: 'rgba(61,180,242,0.20)',
+    borderColor: `${Colors.cyan}33`,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
-    shadowColor: C.cyan,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 4,
+    marginBottom: Spacing.xs,
   },
   heroTitle: {
-    fontSize: 30,
-    fontWeight: '700',
+    ...TextStyles.h1,
     letterSpacing: -0.6,
-    color: C.white,
   },
   heroSubtitle: {
-    fontSize: 14,
-    color: C.onSurfaceVariant,
+    ...TextStyles.body,
     textAlign: 'center',
     lineHeight: 20,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.xl,
   },
 
   // Card
   card: {
     width: '100%',
     maxWidth: 440,
-    backgroundColor: C.glass,
-    borderWidth: 1,
-    borderColor: C.glassBorder,
-    borderRadius: 28,
-    padding: 24,
-    marginBottom: 20,
-    shadowColor: C.cyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.08,
-    shadowRadius: 40,
-    elevation: 8,
+    padding: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
 
   // Pill tab selector
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: 24,
-    gap: 4,
+    backgroundColor: Colors.divider,
+    borderRadius: Radius.md,
+    padding: Spacing.xs,
+    marginBottom: Spacing.lg,
+    gap: Spacing.xs,
   },
-  tabPill: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  tabPill: {
+    flex: 1,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+  },
   tabPillActive: {
-    backgroundColor: 'rgba(61,180,242,0.12)',
+    backgroundColor: `${Colors.cyan}1F`,
     borderWidth: 1,
-    borderColor: 'rgba(61,180,242,0.22)',
+    borderColor: `${Colors.cyan}38`,
   },
-  tabPillText: { fontSize: 14, fontWeight: '600', color: `${C.onSurfaceVariant}75` },
-  tabPillTextActive: { color: C.cyan },
+  tabPillText: {
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.body - 1,
+    color: Colors.mutedText,
+  },
+  tabPillTextActive: { color: Colors.cyan },
+
+  // Error banner
+  errorBanner: {
+    borderColor: Colors.error,
+    backgroundColor: Colors.errorBg,
+    marginBottom: Spacing.md,
+  },
+  errorBannerText: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.bodySmall,
+    color: Colors.error,
+    lineHeight: 18,
+  },
 
   // Form
-  form: { gap: 18 },
-  inputGroup: { gap: 7 },
+  form: { gap: Spacing.md },
+  inputGroup: { gap: Spacing.xs + 2 },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 2,
   },
-  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.2, color: C.onSurfaceVariant },
-  labelFocused: { color: C.cyan },
-  forgotText: { fontSize: 12, fontWeight: '500', color: C.secondary },
+  label: {
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.bodySmall - 1,
+    letterSpacing: 0.2,
+    color: Colors.onSurfaceVariant,
+  },
+  labelFocused: { color: Colors.cyan },
+  forgotText: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.bodySmall - 1,
+    color: Colors.secondary,
+  },
 
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: C.inputBg,
+    backgroundColor: Colors.primaryContainer,
     borderWidth: 1,
-    borderColor: C.inputBorder,
-    borderRadius: 14,
-    paddingHorizontal: 14,
+    borderColor: Colors.glassBorderDim,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md - 2,
     height: 52,
-    gap: 10,
+    gap: Spacing.sm + 2,
   },
   inputWrapperFocused: {
-    borderColor: 'rgba(61,180,242,0.50)',
-    backgroundColor: 'rgba(5,15,29,0.88)',
-    shadowColor: C.cyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.14,
-    shadowRadius: 10,
-    elevation: 2,
+    borderColor: Colors.cyan,
+  },
+  inputWrapperError: {
+    borderColor: Colors.error,
   },
   inputIconBox: { flexShrink: 0 },
-  input: { flex: 1, fontSize: 15, color: C.onSurface, height: '100%' },
-
-  // CTA button
-  ctaButton: {
-    backgroundColor: C.secondaryContainer,
-    paddingVertical: 16,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 54,
-    marginTop: 6,
-    shadowColor: '#009ad7',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  ctaButtonPressed: { opacity: 0.87, transform: [{ scale: 0.984 }] },
-  ctaText: { fontSize: 16, fontWeight: '700', color: '#001e2e', letterSpacing: 0.2 },
-
-  // Divider
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-    gap: 12,
-  },
-  dividerLine: {
+  input: {
     flex: 1,
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    fontFamily: Fonts.regular,
+    fontSize: Typography.body,
+    color: Colors.onSurface,
+    height: '100%',
   },
-  dividerText: {
-    fontSize: 11,
-    fontWeight: '500',
-    letterSpacing: 0.4,
-    color: `${C.onSurfaceVariant}50`,
+  fieldError: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.bodySmall - 1,
+    color: Colors.error,
+    paddingHorizontal: 2,
   },
 
-  // Social buttons
-  socialButtons: { gap: 10 },
-  socialBtn: {
-    flexDirection: 'row',
+  // CTA
+  cta: {
+    backgroundColor: Colors.cyan,
+    paddingVertical: 15,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 14,
-    borderRadius: 14,
-    minHeight: 50,
+    minHeight: 52,
+    marginTop: Spacing.xs,
   },
-  socialBtnPressed: { opacity: 0.84, transform: [{ scale: 0.984 }] },
-  appleBtn: { backgroundColor: C.white },
-  appleBtnText: { fontSize: 14, fontWeight: '600', color: '#000' },
-  googleBtn: {
-    backgroundColor: 'rgba(255,255,255,0.055)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-  },
-  googleBtnPressed: { opacity: 0.84, transform: [{ scale: 0.984 }] },
-  googleBtnText: { fontSize: 14, fontWeight: '600', color: C.onSurface },
-
-  // Legal
-  legal: {
-    fontSize: 11,
-    color: `${C.onSurfaceVariant}50`,
+  ctaDisabled: { opacity: 0.7 },
+  ctaText: {
+    fontFamily: Fonts.semibold,
+    fontSize: Typography.body + 1,
+    color: Colors.bg,
     textAlign: 'center',
-    paddingHorizontal: 20,
-    lineHeight: 18,
-    marginTop: 4,
   },
-  legalLink: { color: `${C.onSurfaceVariant}80`, textDecorationLine: 'underline' },
+
+  // Auth unavailable
+  unavailableTitle: {
+    ...TextStyles.h3,
+    marginBottom: Spacing.sm,
+  },
+  unavailableText: {
+    ...TextStyles.body,
+    lineHeight: 22,
+  },
+
+  // Guest
+  guestBtn: {
+    width: '100%',
+    maxWidth: 440,
+  },
+
+  // Reset sheet
+  sheetOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: `${Colors.bg}CC`,
+  },
+  sheet: {
+    backgroundColor: Colors.deepBlue,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    borderWidth: 1,
+    borderColor: Colors.glassBorder,
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xxl + Spacing.sm,
+    gap: Spacing.md,
+  },
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.glassBorder,
+  },
+  sheetTitle: {
+    ...TextStyles.h3,
+    textAlign: 'center',
+  },
+  sheetSubtitle: {
+    ...TextStyles.body,
+    textAlign: 'center',
+  },
+  sheetConfirmation: {
+    fontFamily: Fonts.medium,
+    fontSize: Typography.body,
+    color: Colors.tertiary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  sheetSpinner: {
+    minHeight: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

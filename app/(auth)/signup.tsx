@@ -1,22 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 
-import { Colors, TextStyles } from '@/lib/theme';
-
-// Placeholder — rebuilt with real authentication in bloc-o
+/** Signup lives as a tab inside the login screen — this route just redirects. */
 export default function SignupScreen() {
-  return (
-    <View style={styles.screen}>
-      <Text style={styles.title}>Inscription</Text>
-    </View>
-  );
+  return <Redirect href="/(auth)/login" />;
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    alignItems: 'center',
-    backgroundColor: Colors.bg,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  title: { ...TextStyles.h2 },
-});
