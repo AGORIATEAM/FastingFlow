@@ -105,6 +105,32 @@ const PROTOCOLS: ProtocolMeta[] = [
     keyBenefit: 'Immunité renforcée · Autophagie profonde',
   },
   {
+    id: '36h',
+    title: '36 heures',
+    fastH: 36,
+    eatH: 0,
+    difficulty: 5,
+    level: 'Expert',
+    accent: '#68fcbf',
+    highlight: '#68fcbf',
+    description:
+      'Autophagie profonde et activation des gènes de longévité (SIRT1, FOXO3). À encadrer.',
+    keyBenefit: 'Gènes de longévité · Régénération intense',
+  },
+  {
+    id: '48h',
+    title: '48 heures',
+    fastH: 48,
+    eatH: 0,
+    difficulty: 5,
+    level: 'Expert',
+    accent: '#68fcbf',
+    highlight: '#68fcbf',
+    description:
+      "Pic maximal d'hormone de croissance et régénération cellulaire complète. Réservé aux jeûneurs expérimentés.",
+    keyBenefit: 'Pic HGH · Régénération complète',
+  },
+  {
     id: 'free',
     title: 'Jeûne libre',
     fastH: 0,
@@ -348,7 +374,6 @@ function FreeDurationPicker({ value, onChange }: { value: number; onChange: (h: 
           onPressOut={() => setMinusPressed(false)}
           onPress={() => onChange(Math.max(1, value - 1))}
         >
-          <Path d="M5 12h14" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" />
           <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
             <Path d="M5 12h14" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" />
           </Svg>
@@ -363,7 +388,7 @@ function FreeDurationPicker({ value, onChange }: { value: number; onChange: (h: 
           style={[styles.freeStepBtn, plusPressed && { opacity: 0.6 }]}
           onPressIn={() => setPlusPressed(true)}
           onPressOut={() => setPlusPressed(false)}
-          onPress={() => onChange(Math.min(72, value + 1))}
+          onPress={() => onChange(Math.min(96, value + 1))}
         >
           <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
             <Path d="M12 5v14M5 12h14" stroke={C.secondary} strokeWidth="2" strokeLinecap="round" />

@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -329,8 +330,8 @@ export default function ProfileScreen() {
   const streak = calculateStreak(sessions);
   const xpPercent = Math.min((xpInLevel / XP_PER_LEVEL) * 100, 100);
 
-  const displayName = firstName.trim() || (user?.isGuest ? 'Utilisateur' : 'Invité');
-  const membership = user?.isGuest ? 'Mode Invité' : 'Membre Premium';
+  const displayName = firstName.trim() || (user?.isGuest ? 'Invité' : 'Utilisateur');
+  const membership = user?.isGuest ? 'Mode Invité' : 'Compte FastLife';
 
   function handleLogout() {
     Alert.alert('Se déconnecter', 'Voulez-vous vraiment vous déconnecter ?', [
@@ -518,7 +519,7 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <LogoutButton onPress={handleLogout} />
-        <Text style={styles.version}>FASTLIFE v2.4.0 • BUILD 882</Text>
+        <Text style={styles.version}>FASTLIFE v{Constants.expoConfig?.version ?? '1.0.0'}</Text>
       </ScrollView>
     </SafeAreaView>
   );
