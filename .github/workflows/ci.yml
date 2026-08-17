@@ -20,8 +20,11 @@ jobs:
         run: npm ci
 
       - name: Content is up to date with docs-source
+        # prettier mirrors the local pre-commit hook, which reformats the
+        # generated JSON — without it the diff fails on formatting alone
         run: |
           npm run generate-content
+          npx prettier --write content/
           git diff --exit-code content/ || {
             echo "content/*.json diverge de docs-source/ — lancez npm run generate-content et committez."
             exit 1
