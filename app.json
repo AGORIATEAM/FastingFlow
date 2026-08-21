@@ -30,6 +30,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      "./plugins/withNoPushEntitlement",
+      "./plugins/withSpaceSafeBundleScript",
       "expo-router",
       "expo-sqlite",
       [
